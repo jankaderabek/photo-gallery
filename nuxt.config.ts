@@ -10,5 +10,6 @@ export default defineNuxtConfig({
   ],
   hub: {
     blob: true,
+    workers: false,
   }
 })
