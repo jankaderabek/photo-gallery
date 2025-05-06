@@ -7,6 +7,7 @@
   <div v-if="data">
     <div v-for="image in data.blobs" :key="image.pathname">
       <img :src="`/images/${image.pathname}`" :alt="image.pathname" width="400px" />
+      <NuxtImg :src="`/${image.pathname}`" :alt="image.pathname" width="400px" />
     </div>
   </div>
 
