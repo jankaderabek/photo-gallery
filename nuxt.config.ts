@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4,
   },
-  compatibilityDate: '2024-11-01',
+  compatibilityDate: '2025-05-07',
   devtools: { enabled: true },
   modules: [
     '@nuxt/eslint',
@@ -14,5 +14,10 @@ export default defineNuxtConfig({
   hub: {
     blob: true,
     workers: true,
+    bindings: {
+      images: {
+        IMAGES: true,
+      }
+    }
   }
 })
