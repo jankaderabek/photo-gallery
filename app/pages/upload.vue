@@ -224,104 +224,140 @@ async function onFileSelect({ target }: Event) {
 </script>
 
 <template>
-  <div class="p-4">
-    <!-- Album Selection -->
-    <div class="mb-4">
-      <label for="album-select" class="block mb-2">Select Album:</label>
-      <div class="flex space-x-2">
-        <select
-          id="album-select"
-          v-model="selectedAlbum"
-          class="flex-grow p-2 border rounded"
-          :disabled="isUploading || showNewAlbumInput"
-        >
-          <option value="" disabled>Select an album</option>
-          <option v-for="album in albums" :key="album.id" :value="album.id">
-            {{ album.name }}
-          </option>
-        </select>
+  <UContainer class="py-8">
+    <UPageHeader title="Upload Images" />
 
-        <button
-          @click="showNewAlbumInput = !showNewAlbumInput"
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          :disabled="isUploading"
-        >
-          {{ showNewAlbumInput ? 'Cancel' : 'New Album' }}
-        </button>
+    <UCard class="my-6">
+      <template #header>
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold">Album Selection</h2>
+          <UButton
+            @click="showNewAlbumInput = !showNewAlbumInput"
+            color="primary"
+            variant="ghost"
+            :icon="showNewAlbumInput ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
+            :disabled="isUploading"
+          >
+            {{ showNewAlbumInput ? 'Cancel' : 'New Album' }}
+          </UButton>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <UFormGroup label="Select Album" help="Choose an existing album for your photos">
+          <USelect
+            v-model="selectedAlbum"
+            :options="albums?.map(album => ({ label: album.name, value: album.id })) || []"
+            placeholder="Select an album"
+            :disabled="isUploading || showNewAlbumInput"
+          />
+        </UFormGroup>
+
+        <UCollapsible v-model="showNewAlbumInput">
+          <UCard class="bg-gray-50 dark:bg-gray-800">
+            <UFormGroup label="New Album Name" help="Enter a name for your new album">
+              <div class="flex space-x-2">
+                <UInput
+                  v-model="newAlbumName"
+                  placeholder="Enter album name"
+                  :disabled="isCreatingAlbum"
+                  class="flex-grow"
+                />
+                <UButton
+                  @click="createNewAlbum"
+                  color="primary"
+                  :loading="isCreatingAlbum"
+                  :disabled="isCreatingAlbum || !newAlbumName.trim()"
+                >
+                  Create
+                </UButton>
+              </div>
+            </UFormGroup>
+          </UCard>
+        </UCollapsible>
       </div>
-    </div>
+    </UCard>
 
-    <!-- New Album Input -->
-    <div v-if="showNewAlbumInput" class="mb-4 p-4 border rounded bg-gray-50">
-      <label for="new-album-name" class="block mb-2">New Album Name:</label>
-      <div class="flex space-x-2">
-        <input
-          id="new-album-name"
-          v-model="newAlbumName"
-          type="text"
-          placeholder="Enter album name"
-          class="flex-grow p-2 border rounded"
-          :disabled="isCreatingAlbum"
+    <UCard class="my-6">
+      <template #header>
+        <h2 class="text-xl font-semibold">Upload Images</h2>
+      </template>
+
+      <UAlert
+        icon="i-heroicons-information-circle"
+        color="info"
+        title="Image Optimization"
+        description="Images larger than 2000px wide will be automatically resized before upload to reduce data transfer."
+        class="mb-4"
+      />
+
+      <UFormGroup label="Select Images" help="Choose images to upload to the selected album">
+        <UInput
+          type="file"
+          accept="image/jpeg, image/png"
+          multiple
+          @change="onFileSelect"
+          :disabled="isUploading || !selectedAlbum"
         />
-        <button
-          @click="createNewAlbum"
-          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          :disabled="isCreatingAlbum || !newAlbumName.trim()"
-        >
-          {{ isCreatingAlbum ? 'Creating...' : 'Create' }}
-        </button>
+        <template #help>
+          <p v-if="!selectedAlbum" class="text-amber-600 dark:text-amber-400">
+            Please select or create an album first
+          </p>
+        </template>
+      </UFormGroup>
+
+      <!-- Processing status -->
+      <UAlert
+        v-if="processingStatus"
+        icon="i-heroicons-arrow-path"
+        color="info"
+        :title="processingStatus"
+        class="my-4"
+      />
+
+      <!-- Loading indicator -->
+      <UAlert
+        v-if="isUploading && !processingStatus"
+        icon="i-heroicons-arrow-path"
+        color="info"
+        title="Uploading files..."
+        description="Please wait while your files are being uploaded."
+        class="my-4"
+      />
+
+      <!-- Error message -->
+      <UAlert
+        v-if="uploadError"
+        icon="i-heroicons-exclamation-triangle"
+        color="red"
+        :title="uploadError"
+        class="my-4"
+      />
+
+      <!-- Results -->
+      <div v-if="uploadResults.length > 0" class="my-4">
+        <h3 class="text-lg font-semibold mb-2">Upload Results:</h3>
+        <ul class="space-y-2">
+          <li v-for="(result, index) in uploadResults" :key="index" class="flex items-center gap-2">
+            <UIcon
+              v-if="result.success"
+              name="i-heroicons-check-circle"
+              class="text-green-500 dark:text-green-400"
+            />
+            <UIcon
+              v-else
+              name="i-heroicons-x-circle"
+              class="text-red-500 dark:text-red-400"
+            />
+            <span v-if="result.success" class="text-green-600 dark:text-green-400">
+              {{ result.filename }} uploaded successfully
+            </span>
+            <span v-else class="text-red-600 dark:text-red-400">
+              {{ result.filename }}: {{ result.error }}
+            </span>
+          </li>
+        </ul>
       </div>
-    </div>
-
-    <!-- Image Optimization Info -->
-    <div class="mb-4 p-4 bg-gray-50 rounded">
-      <h3 class="font-semibold mb-2">Image Optimization</h3>
-      <p class="text-sm text-gray-600">Images larger than 2000px wide will be automatically resized before upload to reduce data transfer.</p>
-    </div>
-
-    <div class="mb-4">
-      <label for="file-upload" class="block mb-2">Select Images:</label>
-      <input
-        id="file-upload"
-        accept="image/jpeg, image/png"
-        type="file"
-        name="file"
-        multiple
-        @change="onFileSelect"
-        class="w-full p-2 border rounded"
-        :disabled="isUploading || !selectedAlbum"
-      >
-      <p v-if="!selectedAlbum" class="text-sm text-amber-600 mt-1">Please select or create an album first</p>
-    </div>
-
-    <!-- Processing status -->
-    <div v-if="processingStatus" class="my-4 p-4 bg-blue-50 rounded">
-      <p>{{ processingStatus }}</p>
-    </div>
-
-    <!-- Loading indicator -->
-    <div v-if="isUploading && !processingStatus" class="my-4 p-4 bg-blue-50 rounded">
-      <p>Uploading files... Please wait.</p>
-    </div>
-
-    <!-- Error message -->
-    <div v-if="uploadError" class="my-4 p-4 bg-red-50 text-red-700 rounded">
-      <p>{{ uploadError }}</p>
-    </div>
-
-    <!-- Results -->
-    <div v-if="uploadResults.length > 0" class="my-4">
-      <h3 class="text-lg font-semibold mb-2">Upload Results:</h3>
-      <ul class="list-disc pl-5">
-        <li v-for="(result, index) in uploadResults" :key="index" class="mb-1">
-          <span v-if="result.success" class="text-green-600">
-            ✓ {{ result.filename }} uploaded successfully
-          </span>
-          <span v-else class="text-red-600">
-            ✗ {{ result.filename }}: {{ result.error }}
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
+    </UCard>
+  </UContainer>
 </template>

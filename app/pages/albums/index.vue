@@ -1,34 +1,53 @@
 <script setup lang="ts">
 // Fetch all albums
-const { data: albums } = await useFetch('/api/albums')
+const {data: albums} = await useFetch('/api/albums')
 </script>
 
 <template>
-  <div class="p-4">
-    <h1 class="text-2xl font-bold mb-6">Albums</h1>
+  <UPage>
+    <UPageHeader title="Albums">
+      <template #right>
+        <UButton
+            to="/upload"
+            color="primary"
+            icon="i-heroicons-arrow-up-tray"
+        >
+          Upload Images
+        </UButton>
+      </template>
+    </UPageHeader>
 
-    <div v-if="!albums || albums.length === 0" class="p-8 text-center bg-gray-50 rounded">
-      <p class="text-gray-500 mb-4">No albums found</p>
-      <NuxtLink to="/upload" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        Create your first album
-      </NuxtLink>
-    </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <NuxtLink
-        v-for="album in albums"
-        :key="album.id"
-        :to="`/albums/${album.id}`"
-        class="block p-4 border rounded hover:shadow-md transition-shadow"
+    <UPageBody>
+      <UAlert
+          v-if="!albums || albums.length === 0"
+          icon="i-heroicons-photo-stack"
+          color="gray"
+          title="No albums found"
+          description="Create your first album to get started."
+          class="mb-4"
       >
-        <h2 class="text-xl font-semibold mb-2">{{ album.name }}</h2>
-      </NuxtLink>
-    </div>
+        <template #actions>
+          <UButton
+              to="/upload"
+              color="primary"
+          >
+            Create your first album
+          </UButton>
+        </template>
+      </UAlert>
 
-    <div class="mt-8">
-      <NuxtLink to="/upload" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        Upload Images
-      </NuxtLink>
-    </div>
-  </div>
+      <UPageGrid v-else cols="1:3" class="gap-6">
+        <div v-for="album in albums" :key="album.id" class="cursor-pointer">
+          <NuxtLink :to="`/albums/${album.id}`" class="block">
+            <UCard class="hover:shadow-lg transition-shadow">
+              <template #header>
+                <h2 class="text-xl font-semibold">{{ album.name }}</h2>
+              </template>
+            </UCard>
+          </NuxtLink>
+        </div>
+      </UPageGrid>
+    </UPageBody>
+  </UPage>
 </template>

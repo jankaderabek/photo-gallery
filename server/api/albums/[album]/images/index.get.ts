@@ -8,8 +8,6 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    console.log('Fetching images for album', album)
-
     const result = await hubBlob().list({
         prefix: `albums/${decodeURIComponent(album)}/`,
         folded: false

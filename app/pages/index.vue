@@ -4,40 +4,52 @@ const { data: albums } = await useFetch('/api/albums')
 </script>
 
 <template>
-  <div class="p-8">
-    <h1 class="text-3xl font-bold mb-8">Photo Gallery</h1>
+  <UContainer class="py-16">
+    <UPageHero
+      title="Photo Gallery"
+      description="Store and organize your photos in albums"
+      :links="[
+        { label: 'Upload Images', to: '/upload', color: 'primary' },
+        { label: 'Browse Albums', to: '/albums', color: 'gray' }
+      ]"
+    />
 
-    <div class="mb-8">
-      <h2 class="text-xl font-semibold mb-4">Your Albums</h2>
+    <UPageSection title="Your Albums">
+      <UAlert
+        v-if="!albums || albums.length === 0"
+        icon="i-heroicons-information-circle"
+        color="gray"
+        title="No albums yet"
+        description="Create your first album to get started."
+      />
 
-      <div v-if="!albums || albums.length === 0" class="p-4 bg-gray-50 rounded mb-4">
-        <p class="text-gray-500">No albums yet. Create your first album to get started.</p>
-      </div>
+      <UCard
+        v-else
+        class="mb-4"
+      >
+        <UPageGrid cols="1:3">
+          <div v-for="album in albums.slice(0, 3)" :key="album.name" class="cursor-pointer">
+            <NuxtLink :to="`/albums/${album.name}`" class="block">
+              <UCard class="hover:shadow-lg transition-shadow">
+                <template #header>
+                  <h3 class="text-lg font-medium">{{ album.name }}</h3>
+                </template>
+              </UCard>
+            </NuxtLink>
+          </div>
+        </UPageGrid>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <NuxtLink
-          v-for="album in albums.slice(0, 3)"
-          :key="album.name"
-          :to="`/albums/${album.name}`"
-          class="block p-4 border rounded hover:shadow-md transition-shadow"
-        >
-          <h3 class="font-medium">{{ album.name }}</h3>
-        </NuxtLink>
-      </div>
-
-      <NuxtLink to="/albums" class="text-blue-500 hover:underline">
-        View all albums →
-      </NuxtLink>
-    </div>
-
-    <div class="flex space-x-4">
-      <NuxtLink to="/upload" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        Upload Images
-      </NuxtLink>
-
-      <NuxtLink to="/albums" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
-        Browse Albums
-      </NuxtLink>
-    </div>
-  </div>
+        <template #footer>
+          <UButton
+            to="/albums"
+            color="gray"
+            variant="ghost"
+            trailing-icon="i-heroicons-arrow-right"
+          >
+            View all albums
+          </UButton>
+        </template>
+      </UCard>
+    </UPageSection>
+  </UContainer>
 </template>

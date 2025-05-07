@@ -10,47 +10,62 @@ const displayName = computed(() => {
 
 // Fetch images for this album
 const { data: images, refresh: refreshImages } = await useFetch(`/api/albums/${albumId}/images`)
+
+// Define header links
+const links = [
+  {
+    label: 'Back to Albums',
+    to: '/albums',
+    icon: 'i-heroicons-arrow-left',
+    color: 'gray',
+    variant: 'ghost'
+  },
+  {
+    label: 'Upload to this album',
+    to: `/upload?album=${albumId}`,
+    icon: 'i-heroicons-arrow-up-tray',
+    color: 'primary',
+    size: 'lg'
+  }
+]
 </script>
 
 <template>
-  <div class="p-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Album: {{ displayName }}</h1>
-      <div class="flex space-x-2">
-        <NuxtLink to="/albums" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
-          Back to Albums
-        </NuxtLink>
-        <NuxtLink
-          :to="`/upload?album=${albumId}`"
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+  <UPage>
+    <UPageHeader :title="displayName" :links="links" />
+
+    <UPageBody>
+      <UAlert
+          v-if="!images || images.length === 0"
+          icon="i-heroicons-photo"
+          color="gray"
+          title="No images in this album"
+          description="Upload your first image to get started."
+          class="mb-4"
+      >
+        <template #actions>
+          <UButton
+              :to="`/upload?album=${albumId}`"
+              color="primary"
+          >
+            Upload to this album
+          </UButton>
+        </template>
+      </UAlert>
+
+      <UPageGrid v-else cols="1:4" class="gap-4">
+        <UCard
+            v-for="image in images"
+            :key="image.id"
+            class="overflow-hidden"
         >
-          Add Images
-        </NuxtLink>
-      </div>
-    </div>
-
-    <div v-if="!images || images.length === 0" class="p-8 text-center bg-gray-50 rounded">
-      <p class="text-gray-500 mb-4">No images in this album</p>
-      <NuxtLink
-        :to="`/upload?album=${albumId}`"
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Upload your first image
-      </NuxtLink>
-    </div>
-
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div
-        v-for="image in images"
-        :key="image.id"
-        class="border rounded overflow-hidden"
-      >
-        <img
-          :src="image.previewUrl"
-          :alt="image.name"
-          class="w-full h-48 object-cover"
-        />
-      </div>
-    </div>
-  </div>
+          <img
+              :src="image.previewUrl"
+              :alt="image.name"
+              class="w-full h-48 object-cover"
+          />
+        </UCard>
+      </UPageGrid>
+    </UPageBody>
+  </UPage>
 </template>

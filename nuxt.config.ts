@@ -8,9 +8,10 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
-    '@nuxt/ui',
+    '@nuxt/ui-pro',
     '@nuxthub/core'
   ],
+  css: ['~/assets/css/main.css'],
   hub: {
     blob: true,
     workers: true,

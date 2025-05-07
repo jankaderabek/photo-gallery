@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const form = await readFormData(event)
-    const imagesPrefix = `albums/${albumId.replace('/', '')}`
+    const imagesPrefix = `albums/${decodeURIComponent(albumId).replace('/', '')}`
     const previewsPrefix = `${imagesPrefix}/previews`
     const files = form.getAll("files") as File[]
 
