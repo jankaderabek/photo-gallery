@@ -15,16 +15,31 @@ export default defineEventHandler(async (event) => {
     let arrayBuffer = await file.arrayBuffer();
     const env = event.context.cloudflare?.env || {}
 
-    const response = (
+    let imageType = "image/webp";
+    const fullSizeImageResponse = await (
         await env.IMAGES.input(arrayBuffer)
-            .transform({ rotate: 90 })
-            .transform({ width: 128 })
-            .transform({ blur: 20 })
-            .output({ format: "image/avif" })
-    ).response();
+            .transform({ width: 1920 })
+            .output({ format: imageType })
+    ).response() as Response;
 
-    return hubBlob().put(file.name, response, {
+    const resizedImageBuffer = await fullSizeImageResponse.arrayBuffer();
+
+
+    const previewSizeImageResponse = await (
+        await env.IMAGES.input(resizedImageBuffer)
+            .transform({ width: 300 })
+            .output({ format: imageType })
+    ).response() as Response;
+
+    await hubBlob().put(file.name, await previewSizeImageResponse.arrayBuffer(), {
         addRandomSuffix: false,
-        prefix: 'images'
+        prefix: 'images/previews',
+        contentType: imageType
+    })
+
+    return hubBlob().put(file.name, resizedImageBuffer, {
+        addRandomSuffix: false,
+        prefix: 'images',
+        contentType: imageType
     })
 })

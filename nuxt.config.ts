@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     blob: true,
     workers: true,
     bindings: {
+      observability: {
+        logs: true,
+      },
       images: {
         IMAGES: {},
       }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
   const route = useRoute()
-  const { data } = await useFetch('/api/images/list/' + route.params.name)
+
+  const folderPath = (route.params.slug as string []).join('/')
+  const { data } = await useFetch('/api/images/list/' + folderPath)
 </script>
 
 <template>
