@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     workers: true,
     bindings: {
       images: {
-        IMAGES: true,
+        IMAGES: {},
       }
     }
   }
