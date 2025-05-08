@@ -11,6 +11,16 @@ const displayName = computed(() => {
 // Fetch images for this album
 const { data: images, refresh: refreshImages } = await useFetch(`/api/albums/${albumId}/images`)
 
+// Gallery state
+const isGalleryOpen = ref(false)
+const selectedImageIndex = ref(0)
+
+// Open gallery with selected image
+function openGallery(index: number) {
+  selectedImageIndex.value = index
+  isGalleryOpen.value = true
+}
+
 // Define header links
 const links = [
   {
@@ -55,9 +65,10 @@ const links = [
 
       <UPageGrid v-else cols="1:4" class="gap-4">
         <UCard
-            v-for="image in images"
+            v-for="(image, index) in images"
             :key="image.id"
-            class="overflow-hidden"
+            class="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+            @click="openGallery(index)"
         >
           <img
               :src="image.previewUrl"
@@ -66,6 +77,15 @@ const links = [
           />
         </UCard>
       </UPageGrid>
+
+      <!-- Image Gallery Modal -->
+      <ImageGallery
+        v-if="images && images.length > 0"
+        :images="images"
+        :initial-index="selectedImageIndex"
+        :open="isGalleryOpen"
+        @update:open="isGalleryOpen = $event"
+      />
     </UPageBody>
   </UPage>
 </template>
