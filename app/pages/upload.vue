@@ -253,7 +253,7 @@ const albumOptions = computed(() => {
     <UCard class="my-6">
       <template #header>
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">Album Selection</h2>
+          <h2 class="text-xl font-semibold">{{ showNewAlbumInput ? 'Create New Album' : 'Album Selection' }}</h2>
           <UButton
             @click="showNewAlbumInput = !showNewAlbumInput"
             color="primary"
@@ -261,23 +261,26 @@ const albumOptions = computed(() => {
             :icon="showNewAlbumInput ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
             :disabled="isUploading"
           >
-            {{ showNewAlbumInput ? 'Cancel' : 'New Album' }}
+            {{ showNewAlbumInput ? 'Select Existing Album' : 'New Album' }}
           </UButton>
         </div>
       </template>
 
       <div class="space-y-4">
-        <UFormField label="Select Album" help="Choose an existing album for your photos">
-          <USelect
-            v-model="selectedAlbum"
-            :items="albumOptions"
-            placeholder="Select an album"
-            :disabled="isUploading"
-          />
-        </UFormField>
+        <!-- Album Selection - Hidden when creating a new album -->
+        <div v-if="!showNewAlbumInput">
+          <UFormField label="Select Album" help="Choose an existing album for your photos">
+            <USelect
+              v-model="selectedAlbum"
+              :items="albumOptions"
+              placeholder="Select an album"
+              :disabled="isUploading"
+            />
+          </UFormField>
+        </div>
 
         <!-- New Album Form - Only shown when showNewAlbumInput is true -->
-        <div v-if="showNewAlbumInput" class="mt-4">
+        <div v-if="showNewAlbumInput">
           <UCard class="bg-gray-50 dark:bg-gray-800">
             <UFormField label="New Album Name" help="Enter a name for your new album">
               <div class="flex space-x-2">

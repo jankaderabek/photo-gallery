@@ -37,9 +37,47 @@ const links = computed(() => {
       to: `/upload?album=${albumId}`,
       icon: 'i-heroicons-arrow-up-tray',
       color: 'primary' as const,
+    },
+    {
+      label: 'Delete album',
+      icon: 'i-heroicons-trash',
+      color: 'red' as const,
+      onClick: () => showDeleteAlbumConfirm.value = true
     }
   ]
 })
+
+// Delete album confirmation
+const showDeleteAlbumConfirm = ref(false)
+const isDeletingAlbum = ref(false)
+const deleteAlbumError = ref('')
+
+// Handle image deletion
+async function handleImageDeleted() {
+  await refreshImages()
+}
+
+// Delete album and all its images
+async function deleteAlbum() {
+  isDeletingAlbum.value = true
+  deleteAlbumError.value = ''
+
+  try {
+    const response = await $fetch(`/api/albums/${albumId}`, {
+      method: 'DELETE'
+    })
+
+    if (response.success) {
+      // Navigate back to albums list
+      navigateTo('/albums')
+    }
+  } catch (error) {
+    console.error('Error deleting album:', error)
+    deleteAlbumError.value = 'Failed to delete album'
+  } finally {
+    isDeletingAlbum.value = false
+  }
+}
 </script>
 
 <template>
@@ -90,8 +128,56 @@ const links = computed(() => {
           :images="images"
           :initial-index="selectedImageIndex"
           :open="isGalleryOpen"
+          :album-id="albumId"
           @update:open="isGalleryOpen = $event"
+          @image-deleted="handleImageDeleted"
       />
+
+
     </UPageBody>
   </UPage>
+
+  <!-- Delete Album Confirmation Modal -->
+  <UButton
+    v-if="false"
+    @click="showDeleteAlbumConfirm = true"
+    label="Delete Album"
+    color="red"
+  />
+
+  <UModal
+    v-model:open="showDeleteAlbumConfirm"
+    title="Delete Album"
+    :ui="{ footer: 'justify-end' }"
+  >
+    <template #body>
+      <div class="space-y-4">
+        <p>Are you sure you want to delete the album <strong>{{ displayName }}</strong> and all its images?</p>
+        <p class="text-red-500 font-medium">This action cannot be undone.</p>
+
+        <UAlert v-if="deleteAlbumError" color="red" variant="soft" class="mt-4">
+          {{ deleteAlbumError }}
+        </UAlert>
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex gap-2">
+        <UButton
+          color="gray"
+          variant="soft"
+          @click="showDeleteAlbumConfirm = false"
+          :disabled="isDeletingAlbum"
+          label="Cancel"
+        />
+        <UButton
+          color="red"
+          @click="deleteAlbum"
+          :loading="isDeletingAlbum"
+          :disabled="isDeletingAlbum"
+          label="Delete Album"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>

@@ -10,9 +10,19 @@ const props = defineProps<{
   images: Image[]
   initialIndex?: number
   open: boolean
+  albumId?: string
 }>()
 
-const emit = defineEmits(['update:open'])
+const emit = defineEmits(['update:open', 'image-deleted'])
+
+// Get user session to check if admin
+const { user } = useUserSession()
+const isAdmin = computed(() => user.value?.role === 'admin')
+
+// Delete confirmation
+const showDeleteConfirm = ref(false)
+const isDeleting = ref(false)
+const deleteError = ref('')
 
 // Current image index
 const currentIndex = ref(props.initialIndex || 0)
@@ -53,6 +63,40 @@ function previous() {
 
 function close() {
   emit('update:open', false)
+  showDeleteConfirm.value = false
+}
+
+async function deleteCurrentImage() {
+  if (!currentImage.value || !props.albumId) return
+
+  isDeleting.value = true
+  deleteError.value = ''
+
+  try {
+    const response = await $fetch(`/api/albums/${props.albumId}/images/${encodeURIComponent(currentImage.value.id)}`, {
+      method: 'DELETE'
+    })
+
+    if (response.success) {
+      // Emit event to parent to refresh images
+      emit('image-deleted', currentImage.value.id)
+
+      // Close modal if this was the last image
+      if (props.images.length <= 1) {
+        close()
+      } else if (currentIndex.value === props.images.length - 1) {
+        // If we deleted the last image, go to the previous one
+        currentIndex.value--
+      }
+      // Otherwise stay on the same index (which will show the next image)
+    }
+  } catch (error) {
+    console.error('Error deleting image:', error)
+    deleteError.value = 'Failed to delete image'
+  } finally {
+    isDeleting.value = false
+    showDeleteConfirm.value = false
+  }
 }
 
 // Watch for initialIndex changes
@@ -104,8 +148,22 @@ defineShortcuts({
           {{ currentIndex + 1 }} / {{ imageCount }}
         </div>
 
-        <!-- Close button -->
-        <div class="absolute top-4 right-4 z-10">
+        <!-- Top right buttons -->
+        <div class="absolute top-4 right-4 z-10 flex space-x-2">
+          <!-- Delete button (admin only) -->
+          <UButton
+            v-if="isAdmin"
+            @click="showDeleteConfirm = true"
+            aria-label="Delete image"
+            icon="i-heroicons-trash"
+            color="red"
+            variant="ghost"
+            size="lg"
+            class="cursor-pointer"
+            :disabled="isDeleting"
+          />
+
+          <!-- Close button -->
           <UButton
             @click="close"
             aria-label="Close gallery"
@@ -115,6 +173,43 @@ defineShortcuts({
             class="cursor-pointer"
           />
         </div>
+
+        <!-- Delete confirmation modal -->
+        <UModal
+          v-model:open="showDeleteConfirm"
+          title="Delete Image"
+          :ui="{ footer: 'justify-end' }"
+        >
+          <template #body>
+            <div class="space-y-4">
+              <p>Are you sure you want to delete this image?</p>
+              <p class="text-red-500 font-medium">This action cannot be undone.</p>
+
+              <UAlert v-if="deleteError" color="red" variant="soft" class="mt-4">
+                {{ deleteError }}
+              </UAlert>
+            </div>
+          </template>
+
+          <template #footer>
+            <div class="flex gap-2">
+              <UButton
+                color="gray"
+                variant="soft"
+                @click="showDeleteConfirm = false"
+                :disabled="isDeleting"
+                label="Cancel"
+              />
+              <UButton
+                color="red"
+                @click="deleteCurrentImage"
+                :loading="isDeleting"
+                :disabled="isDeleting"
+                label="Delete"
+              />
+            </div>
+          </template>
+        </UModal>
 
         <!-- Main image -->
         <div class="w-full h-full flex items-center justify-center p-4 relative">
