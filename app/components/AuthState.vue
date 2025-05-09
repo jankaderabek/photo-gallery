@@ -6,14 +6,20 @@ const status = computed(() => loggedIn.value ? 'authenticated' : 'unauthenticate
 <template>
   <div>
     <template v-if="status === 'authenticated'">
-      <slot :loggedIn="loggedIn" :user="user">
+      <slot
+        :logged-in="loggedIn"
+        :user="user"
+      >
         <!-- Default authenticated content -->
         <div>Logged in as {{ user?.email }}</div>
       </slot>
     </template>
 
     <template v-else-if="status === 'unauthenticated'">
-      <slot :loggedIn="false" :user="null">
+      <slot
+        :logged-in="false"
+        :user="null"
+      >
         <!-- Default unauthenticated content -->
         <div>Not logged in</div>
       </slot>

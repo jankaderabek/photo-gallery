@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string()
+  password: z.string(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({
       statusCode: 401,
-      message: 'Invalid email or password'
+      message: 'Invalid email or password',
     })
   }
 
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   if (!isPasswordValid) {
     throw createError({
       statusCode: 401,
-      message: 'Invalid email or password'
+      message: 'Invalid email or password',
     })
   }
 
@@ -38,15 +38,15 @@ export default defineEventHandler(async (event) => {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role
+      role: user.role,
     },
-    loggedInAt: Date.now()
+    loggedInAt: Date.now(),
   })
 
   return {
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role
+    role: user.role,
   }
 })

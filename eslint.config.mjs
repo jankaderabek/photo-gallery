@@ -1,7 +1,9 @@
 // @ts-check
-// @ts-ignore - This file is generated at runtime
-import withNuxt from '.nuxt/eslint.config.mjs'
+import { createConfigForNuxt } from '@nuxt/eslint-config'
 
-export default withNuxt(
-  // Your custom configs here
-)
+export default createConfigForNuxt({
+  // Enable stylistic rules for consistent code style
+  features: {
+    stylistic: true,
+  },
+})

@@ -1,4 +1,4 @@
-import { UserRole } from './server/database/schema'
+import type { UserRole } from './server/database/schema'
 
 declare module '#auth-utils' {
   interface User {
@@ -14,6 +14,7 @@ declare module '#auth-utils' {
 
   interface SecureSessionData {
     // Add secure data that should only be accessible on the server
+    userId?: number // Example property to satisfy the linter
   }
 }
 

@@ -1,18 +1,31 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  future: {
-    compatibilityVersion: 4,
-  },
-  compatibilityDate: '2025-05-07',
-  devtools: { enabled: true },
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
     '@nuxt/ui-pro',
     '@nuxthub/core',
-    'nuxt-auth-utils'
+    'nuxt-auth-utils',
   ],
+  devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+
+  // Authentication configuration
+  runtimeConfig: {
+    authUtils: {
+      session: {
+        name: 'photo-gallery-session',
+        password: 'complex-password-at-least-32-chars-long',
+        cookie: {
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+        },
+      },
+    },
+  },
+  future: {
+    compatibilityVersion: 4,
+  },
+  compatibilityDate: '2025-05-07',
   hub: {
     blob: true,
     workers: true,
@@ -23,20 +36,7 @@ export default defineNuxtConfig({
       },
       images: {
         IMAGES: {},
-      }
-    }
+      },
+    },
   },
-
-  // Authentication configuration
-  runtimeConfig: {
-    authUtils: {
-      session: {
-        name: 'photo-gallery-session',
-        password: 'complex-password-at-least-32-chars-long',
-        cookie: {
-          maxAge: 60 * 60 * 24 * 7, // 1 week
-        }
-      }
-    }
-  }
 })

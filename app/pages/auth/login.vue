@@ -9,7 +9,7 @@ if (loggedIn.value) {
 
 const credentials = reactive({
   email: '',
-  password: ''
+  password: '',
 })
 
 const isLoading = ref(false)
@@ -22,15 +22,17 @@ async function login() {
   try {
     await $fetch('/api/auth/login', {
       method: 'POST',
-      body: credentials
+      body: credentials,
     })
 
     // Refresh the session and redirect to home
     await refreshSession()
     await navigateTo('/')
-  } catch (e: any) {
-    error.value = e.data?.message || 'Failed to login'
-  } finally {
+  }
+  catch (e: Error | { data?: { message?: string } }) {
+    error.value = 'data' in e && e.data?.message ? e.data.message : 'Failed to login'
+  }
+  finally {
     isLoading.value = false
   }
 }
@@ -40,24 +42,53 @@ async function login() {
   <UContainer class="py-16 max-w-md">
     <UCard>
       <template #header>
-        <h1 class="text-2xl font-bold">Login</h1>
+        <h1 class="text-2xl font-bold">
+          Login
+        </h1>
       </template>
 
-      <UForm :state="credentials" @submit="login" class="space-y-4">
-        <UFormField label="Email" name="email">
-          <UInput v-model="credentials.email" type="email" placeholder="Enter your email" />
+      <UForm
+        :state="credentials"
+        class="space-y-4"
+        @submit="login"
+      >
+        <UFormField
+          label="Email"
+          name="email"
+        >
+          <UInput
+            v-model="credentials.email"
+            type="email"
+            placeholder="Enter your email"
+          />
         </UFormField>
 
-        <UFormField label="Password" name="password">
-          <UInput v-model="credentials.password" type="password" placeholder="Enter your password" />
+        <UFormField
+          label="Password"
+          name="password"
+        >
+          <UInput
+            v-model="credentials.password"
+            type="password"
+            placeholder="Enter your password"
+          />
         </UFormField>
 
-        <UAlert v-if="error" color="error" variant="soft" class="my-4">
+        <UAlert
+          v-if="error"
+          color="error"
+          variant="soft"
+          class="my-4"
+        >
           {{ error }}
         </UAlert>
 
         <div class="flex justify-start items-center mt-6">
-          <UButton type="submit" color="primary" :loading="isLoading">
+          <UButton
+            type="submit"
+            color="primary"
+            :loading="isLoading"
+          >
             Login
           </UButton>
         </div>

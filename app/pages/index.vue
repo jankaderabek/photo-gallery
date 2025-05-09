@@ -9,7 +9,7 @@ const isAdmin = computed(() => user.value?.role === 'admin')
 // Define links based on user role
 const heroLinks = computed(() => {
   const links = [
-    { label: 'Browse Albums', to: '/albums', color: 'neutral' as const }
+    { label: 'Browse Albums', to: '/albums', color: 'neutral' as const },
   ]
 
   if (isAdmin.value) {
@@ -42,8 +42,15 @@ const heroLinks = computed(() => {
         class="mb-4"
       >
         <UPageGrid cols="1:3">
-          <div v-for="album in albums.slice(0, 3)" :key="album.name" class="cursor-pointer">
-            <NuxtLink :to="`/albums/${album.name}`" class="block">
+          <div
+            v-for="album in albums.slice(0, 3)"
+            :key="album.name"
+            class="cursor-pointer"
+          >
+            <NuxtLink
+              :to="`/albums/${album.name}`"
+              class="block"
+            >
               <UCard class="hover:shadow-lg transition-shadow">
                 <template #header>
                   <h3 class="text-lg font-medium">{{ album.name }}</h3>

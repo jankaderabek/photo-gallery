@@ -1,11 +1,11 @@
 <script setup lang="ts">
 // Apply admin middleware
 definePageMeta({
-  middleware: ['admin']
+  middleware: ['admin'],
 })
 
 // Fetch users
-const {data: users, refresh: refreshUsers} = await useFetch('/api/admin/users')
+const { data: users, refresh: refreshUsers } = await useFetch('/api/admin/users')
 
 // New user form
 const showNewUserForm = ref(false)
@@ -13,7 +13,7 @@ const newUser = reactive({
   name: '',
   email: '',
   password: '',
-  role: 'user'
+  role: 'user',
 })
 
 const isLoading = ref(false)
@@ -41,7 +41,7 @@ async function createUser() {
   try {
     await $fetch('/api/admin/users', {
       method: 'POST',
-      body: newUser
+      body: newUser,
     })
 
     // Reset form and refresh users
@@ -53,9 +53,11 @@ async function createUser() {
     showNewUserForm.value = false
 
     await refreshUsers()
-  } catch (e: any) {
-    error.value = e.data?.message || 'Failed to create user'
-  } finally {
+  }
+  catch (e: Error | { data?: { message?: string } }) {
+    error.value = 'data' in e && e.data?.message ? e.data.message : 'Failed to create user'
+  }
+  finally {
     isLoading.value = false
   }
 }
@@ -66,71 +68,105 @@ async function createUser() {
     <UPageHeader title="User Management">
       <template #right>
         <UButton
-            @click="showNewUserForm = !showNewUserForm"
-            color="primary"
-            :icon="showNewUserForm ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
+          color="primary"
+          :icon="showNewUserForm ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
+          @click="showNewUserForm = !showNewUserForm"
         >
           {{ showNewUserForm ? 'Cancel' : 'Add User' }}
         </UButton>
       </template>
     </UPageHeader>
 
-    <UDivider class="my-6"/>
+    <UDivider class="my-6" />
 
     <!-- New User Form -->
     <UCollapsible v-model="showNewUserForm">
       <UCard class="mb-6">
         <template #header>
-          <h2 class="text-xl font-semibold">Add New User</h2>
+          <h2 class="text-xl font-semibold">
+            Add New User
+          </h2>
         </template>
 
-        <UForm :state="newUser" @submit="createUser" class="space-y-4">
+        <UForm
+          :state="newUser"
+          class="space-y-4"
+          @submit="createUser"
+        >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormField label="Name" name="name">
-              <UInput v-model="newUser.name" placeholder="Enter name"/>
+            <UFormField
+              label="Name"
+              name="name"
+            >
+              <UInput
+                v-model="newUser.name"
+                placeholder="Enter name"
+              />
             </UFormField>
 
-            <UFormField label="Email" name="email">
-              <UInput v-model="newUser.email" type="email" placeholder="Enter email"/>
+            <UFormField
+              label="Email"
+              name="email"
+            >
+              <UInput
+                v-model="newUser.email"
+                type="email"
+                placeholder="Enter email"
+              />
             </UFormField>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UFormField label="Password" name="password">
+            <UFormField
+              label="Password"
+              name="password"
+            >
               <div class="flex items-center space-x-2">
                 <UInput
-                    v-model="newUser.password"
-                    type="text"
-                    placeholder="Enter password"
+                  v-model="newUser.password"
+                  type="text"
+                  placeholder="Enter password"
                 />
                 <UButton
-                    color="primary"
-                    variant="soft"
-                    @click="generatePassword"
-                    class="whitespace-nowrap"
+                  color="primary"
+                  variant="soft"
+                  class="whitespace-nowrap"
+                  @click="generatePassword"
                 >
                   Generate
                 </UButton>
               </div>
             </UFormField>
 
-            <UFormField label="Role" name="role">
+            <UFormField
+              label="Role"
+              name="role"
+            >
               <USelect
-                  v-model="newUser.role"
-                  :items="[
-                    { label: 'User', value: 'user' },
-                    { label: 'Admin', value: 'admin' }
-                  ]"
+                v-model="newUser.role"
+                :items="[
+                  { label: 'User', value: 'user' },
+                  { label: 'Admin', value: 'admin' },
+                ]"
               />
             </UFormField>
           </div>
 
-          <UAlert v-if="error" color="error" variant="soft" class="my-4">
+          <UAlert
+            v-if="error"
+            color="error"
+            variant="soft"
+            class="my-4"
+          >
             {{ error }}
           </UAlert>
 
           <div class="flex justify-start mt-4">
-            <UButton type="submit" color="primary" :loading="isLoading">
+            <UButton
+              type="submit"
+              color="primary"
+              :loading="isLoading"
+            >
               Create User
             </UButton>
           </div>
@@ -141,11 +177,13 @@ async function createUser() {
     <!-- Users Table -->
     <UCard>
       <template #header>
-        <h2 class="text-xl font-semibold">Users</h2>
+        <h2 class="text-xl font-semibold">
+          Users
+        </h2>
       </template>
 
       <UTable
-          :data="users || []"
+        :data="users || []"
       >
         <template #cell-role="{ row }">
           <UBadge :color="row.getValue('role') === 'admin' ? 'error' : 'info'">

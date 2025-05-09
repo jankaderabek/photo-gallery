@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Apply auth middleware
 definePageMeta({
-  middleware: ['admin']
+  middleware: ['admin'],
 })
 const route = useRoute()
 const selectedAlbum = ref('')
@@ -9,7 +9,17 @@ const newAlbumName = ref('')
 const showNewAlbumInput = ref(false) // Controls visibility of new album form
 const isUploading = ref(false)
 const isCreatingAlbum = ref(false)
-const uploadResults = ref<any[]>([])
+interface UploadResult {
+  id?: string
+  name?: string
+  path?: string
+  size?: number
+  type?: string
+  error?: string
+  status?: string
+}
+
+const uploadResults = ref<UploadResult[]>([])
 const uploadError = ref('')
 const processingStatus = ref('')
 const MAX_WIDTH = 2000 // Fixed maximum width for resized images
@@ -86,12 +96,13 @@ async function resizeImage(file: File): Promise<Blob> {
           (blob) => {
             if (blob) {
               resolve(blob)
-            } else {
+            }
+            else {
               reject(new Error('Failed to create blob from canvas'))
             }
           },
           'image/jpeg', // Convert all images to JPEG for consistency
-          QUALITY
+          QUALITY,
         )
       }
 
@@ -103,7 +114,8 @@ async function resizeImage(file: File): Promise<Blob> {
       // Set the image source to the FileReader result
       if (readerEvent.target?.result) {
         img.src = readerEvent.target.result as string
-      } else {
+      }
+      else {
         reject(new Error('Failed to read file'))
       }
     }
@@ -132,8 +144,8 @@ async function createNewAlbum() {
       method: 'POST',
       body: JSON.stringify({ name: newAlbumName.value }),
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
 
     if (!response.ok) {
@@ -152,10 +164,12 @@ async function createNewAlbum() {
     // Reset and hide the new album input
     newAlbumName.value = ''
     showNewAlbumInput.value = false
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error creating album:', error)
     uploadError.value = error instanceof Error ? error.message : 'Unknown error occurred'
-  } finally {
+  }
+  finally {
     isCreatingAlbum.value = false
   }
 }
@@ -196,7 +210,8 @@ async function onFileSelect({ target }: Event) {
         if (fileToUpload !== file) {
           processingStatus.value = `Processed ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB → ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB)`
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn(`Failed to resize ${file.name}, uploading original:`, error)
         processingStatus.value = `Could not resize ${file.name}, uploading original`
       }
@@ -211,7 +226,7 @@ async function onFileSelect({ target }: Event) {
     // Send the request
     const response = await fetch(`/api/albums/${selectedAlbum.value}/images`, {
       method: 'POST',
-      body: formData
+      body: formData,
     })
 
     if (!response.ok) {
@@ -224,10 +239,12 @@ async function onFileSelect({ target }: Event) {
     uploadResults.value = results
     // Show success message instead of clearing processing status
     processingStatus.value = 'Upload completed successfully!'
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Upload error:', error)
     uploadError.value = error instanceof Error ? error.message : 'Unknown error occurred'
-  } finally {
+  }
+  finally {
     isUploading.value = false
     // Only clear processing status if there was an error
     if (uploadError.value) {
@@ -241,7 +258,7 @@ async function onFileSelect({ target }: Event) {
 const albumOptions = computed(() => {
   return albums.value?.map(album => ({
     label: album.name,
-    value: album.id
+    value: album.id,
   })) || []
 })
 </script>
@@ -253,13 +270,15 @@ const albumOptions = computed(() => {
     <UCard class="my-6">
       <template #header>
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">{{ showNewAlbumInput ? 'Create New Album' : 'Album Selection' }}</h2>
+          <h2 class="text-xl font-semibold">
+            {{ showNewAlbumInput ? 'Create New Album' : 'Album Selection' }}
+          </h2>
           <UButton
-            @click="showNewAlbumInput = !showNewAlbumInput"
             color="primary"
             variant="ghost"
             :icon="showNewAlbumInput ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
             :disabled="isUploading"
+            @click="showNewAlbumInput = !showNewAlbumInput"
           >
             {{ showNewAlbumInput ? 'Select Existing Album' : 'New Album' }}
           </UButton>
@@ -269,7 +288,10 @@ const albumOptions = computed(() => {
       <div class="space-y-4">
         <!-- Album Selection - Hidden when creating a new album -->
         <div v-if="!showNewAlbumInput">
-          <UFormField label="Select Album" help="Choose an existing album for your photos">
+          <UFormField
+            label="Select Album"
+            help="Choose an existing album for your photos"
+          >
             <USelect
               v-model="selectedAlbum"
               :items="albumOptions"
@@ -282,7 +304,10 @@ const albumOptions = computed(() => {
         <!-- New Album Form - Only shown when showNewAlbumInput is true -->
         <div v-if="showNewAlbumInput">
           <UCard class="bg-gray-50 dark:bg-gray-800">
-            <UFormField label="New Album Name" help="Enter a name for your new album">
+            <UFormField
+              label="New Album Name"
+              help="Enter a name for your new album"
+            >
               <div class="flex space-x-2">
                 <UInput
                   v-model="newAlbumName"
@@ -291,10 +316,10 @@ const albumOptions = computed(() => {
                   class="flex-grow"
                 />
                 <UButton
-                  @click="createNewAlbum"
                   color="primary"
                   :loading="isCreatingAlbum"
                   :disabled="isCreatingAlbum || !newAlbumName.trim()"
+                  @click="createNewAlbum"
                 >
                   Create
                 </UButton>
@@ -307,7 +332,9 @@ const albumOptions = computed(() => {
 
     <UCard class="my-6">
       <template #header>
-        <h2 class="text-xl font-semibold">Upload Images</h2>
+        <h2 class="text-xl font-semibold">
+          Upload Images
+        </h2>
       </template>
 
       <UAlert
@@ -318,16 +345,22 @@ const albumOptions = computed(() => {
         class="mb-4"
       />
 
-      <UFormField label="Select Images" help="Choose images to upload to the selected album">
+      <UFormField
+        label="Select Images"
+        help="Choose images to upload to the selected album"
+      >
         <UInput
           type="file"
           accept="image/jpeg, image/png"
           multiple
-          @change="onFileSelect"
           :disabled="isUploading || !selectedAlbum"
+          @change="onFileSelect"
         />
         <template #help>
-          <p v-if="!selectedAlbum" class="text-amber-600 dark:text-amber-400">
+          <p
+            v-if="!selectedAlbum"
+            class="text-amber-600 dark:text-amber-400"
+          >
             Please select or create an album first
           </p>
         </template>
@@ -362,10 +395,19 @@ const albumOptions = computed(() => {
       />
 
       <!-- Results -->
-      <div v-if="uploadResults.length > 0" class="my-4">
-        <h3 class="text-lg font-semibold mb-2">Upload Results:</h3>
+      <div
+        v-if="uploadResults.length > 0"
+        class="my-4"
+      >
+        <h3 class="text-lg font-semibold mb-2">
+          Upload Results:
+        </h3>
         <ul class="space-y-2">
-          <li v-for="(result, index) in uploadResults" :key="index" class="flex items-center gap-2">
+          <li
+            v-for="(result, index) in uploadResults"
+            :key="index"
+            class="flex items-center gap-2"
+          >
             <UIcon
               v-if="result.success"
               name="i-heroicons-check-circle"
@@ -376,10 +418,16 @@ const albumOptions = computed(() => {
               name="i-heroicons-x-circle"
               class="text-red-500 dark:text-red-400"
             />
-            <span v-if="result.success" class="text-green-600 dark:text-green-400">
+            <span
+              v-if="result.success"
+              class="text-green-600 dark:text-green-400"
+            >
               {{ result.filename }} uploaded successfully
             </span>
-            <span v-else class="text-red-600 dark:text-red-400">
+            <span
+              v-else
+              class="text-red-600 dark:text-red-400"
+            >
               {{ result.filename }}: {{ result.error }}
             </span>
           </li>

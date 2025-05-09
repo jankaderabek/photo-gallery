@@ -13,21 +13,24 @@ async function handleLogout() {
     <div class="min-h-screen flex flex-col">
       <UHeader class="border-b border-gray-200 dark:border-gray-800">
         <template #left>
-          <NuxtLink to="/" class="font-bold text-xl">Photo Gallery</NuxtLink>
+          <NuxtLink
+            to="/"
+            class="font-bold text-xl"
+          >Photo Gallery</NuxtLink>
         </template>
         <template #right>
           <UButton
-              to="/albums"
-              variant="ghost"
-              color="neutral"
+            to="/albums"
+            variant="ghost"
+            color="neutral"
           >
             Albums
           </UButton>
           <UButton
-              v-if="user?.role === 'admin'"
-              to="/upload"
-              variant="ghost"
-              color="neutral"
+            v-if="user?.role === 'admin'"
+            to="/upload"
+            variant="ghost"
+            color="neutral"
           >
             Upload
           </UButton>
@@ -46,16 +49,22 @@ async function handleLogout() {
 
             <!-- User menu -->
             <UPopover>
-              <UButton color="neutral" variant="ghost" trailing-icon="i-heroicons-chevron-down">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                trailing-icon="i-heroicons-chevron-down"
+              >
                 {{ user?.email }}
               </UButton>
 
               <template #content>
                 <div class="p-2 w-64">
                   <div class="p-2 mb-2 border-b">
-
                     <div class="flex items-center gap-2 mt-1">
-                      <UIcon name="i-heroicons-envelope" class="text-gray-500" />
+                      <UIcon
+                        name="i-heroicons-envelope"
+                        class="text-gray-500"
+                      />
                       <span class="text-sm text-gray-500">{{ user?.email }}</span>
                     </div>
                   </div>

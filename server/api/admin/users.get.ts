@@ -1,11 +1,11 @@
 export default defineEventHandler(async (event) => {
   // Require a user session and check if the user is an admin
   const { user } = await requireUserSession(event)
-  
+
   if (user.role !== 'admin') {
     throw createError({
       statusCode: 403,
-      message: 'Forbidden: Admin access required'
+      message: 'Forbidden: Admin access required',
     })
   }
 
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
       email: tables.users.email,
       name: tables.users.name,
       role: tables.users.role,
-      createdAt: tables.users.createdAt
+      createdAt: tables.users.createdAt,
     })
     .from(tables.users)
     .all()

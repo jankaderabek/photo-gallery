@@ -12,14 +12,15 @@ export default defineEventHandler(async (event) => {
       if (user.role !== 'admin') {
         throw createError({
           statusCode: 403,
-          message: 'Forbidden: Admin access required'
+          message: 'Forbidden: Admin access required',
         })
       }
-    } catch (error: any) {
-      if (error.statusCode === 401) {
+    }
+    catch (error: unknown) {
+      if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 401) {
         throw createError({
           statusCode: 401,
-          message: 'Unauthorized: Authentication required'
+          message: 'Unauthorized: Authentication required',
         })
       }
       throw error

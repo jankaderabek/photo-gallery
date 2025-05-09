@@ -5,7 +5,7 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().min(2),
-  role: z.enum(['user', 'admin']).optional()
+  role: z.enum(['user', 'admin']).optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (user.role !== 'admin') {
     throw createError({
       statusCode: 403,
-      message: 'Forbidden: Admin access required'
+      message: 'Forbidden: Admin access required',
     })
   }
 
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
   if (existingUser) {
     throw createError({
       statusCode: 400,
-      message: 'User with this email already exists'
+      message: 'User with this email already exists',
     })
   }
 
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
       password: hashedPassword,
       name,
       role: role as UserRole,
-      createdAt: new Date()
+      createdAt: new Date(),
     })
     .returning()
     .get()
@@ -57,6 +57,6 @@ export default defineEventHandler(async (event) => {
     email: newUser.email,
     name: newUser.name,
     role: newUser.role,
-    createdAt: newUser.createdAt
+    createdAt: newUser.createdAt,
   }
 })
