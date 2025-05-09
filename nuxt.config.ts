@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   hub: {
     blob: true,
     workers: true,
+    database: true,
     bindings: {
       observability: {
         logs: true,

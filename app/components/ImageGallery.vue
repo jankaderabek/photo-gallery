@@ -143,7 +143,7 @@ defineShortcuts({
             aria-label="Previous image"
             icon="i-heroicons-chevron-left"
             variant="soft"
-            class="rounded-ful cursor-pointer"
+            class="rounded-full cursor-pointer"
             size="xl"
           />
         </div>

@@ -25,7 +25,7 @@
 
     <UMain>
       <UContainer>
-          <slot />
+        <slot />
       </UContainer>
     </UMain>
 

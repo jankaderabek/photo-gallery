@@ -1,15 +1,29 @@
 export default defineEventHandler(async (event) => {
-    const album = event.context.params?.album
+    const albumPathname = event.context.params?.album
+
+    if (!albumPathname) {
+        throw createError({
+            statusCode: 400,
+            message: 'Album pathname is required'
+        })
+    }
+
+    // Check if album exists in database
+    const album = await useDrizzle()
+        .select()
+        .from(tables.albums)
+        .where(eq(tables.albums.pathname, albumPathname))
+        .get()
 
     if (!album) {
         throw createError({
-            statusCode: 400,
-            message: 'Album name is required'
+            statusCode: 404,
+            message: 'Album not found'
         })
     }
 
     const result = await hubBlob().list({
-        prefix: `albums/${decodeURIComponent(album)}/`,
+        prefix: `albums/${albumPathname}/`,
         folded: false
     })
 
@@ -24,7 +38,7 @@ export default defineEventHandler(async (event) => {
             return {
                 id: blob.pathname,
                 url: `/images/${blob.pathname}`,
-                previewUrl: `/images/albums/${decodeURIComponent(album)}/previews/${filename}`,
+                previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
                 uploadedAt: blob.uploadedAt
             }
         })

@@ -1,15 +1,29 @@
 export default defineEventHandler(async (event) => {
-    const albumId = event.context.params?.album
+    const albumPathname = event.context.params?.album
 
-    if (!albumId) {
+    if (!albumPathname) {
         throw createError({
             statusCode: 400,
-            message: 'Album ID is required'
+            message: 'Album pathname is required'
+        })
+    }
+
+    // Check if album exists in database
+    const album = await useDrizzle()
+        .select()
+        .from(tables.albums)
+        .where(eq(tables.albums.pathname, albumPathname))
+        .get()
+
+    if (!album) {
+        throw createError({
+            statusCode: 404,
+            message: 'Album not found'
         })
     }
 
     const form = await readFormData(event)
-    const imagesPrefix = `albums/${decodeURIComponent(albumId).replace('/', '')}`
+    const imagesPrefix = `albums/${albumPathname.replace('/', '')}`
     const previewsPrefix = `${imagesPrefix}/previews`
     const files = form.getAll("files") as File[]
 
@@ -41,31 +55,38 @@ export default defineEventHandler(async (event) => {
             const originalName = file.name;
             const timestampedName = timestamp + originalName;
 
+            let fullSizeImageBuffer = arrayBuffer;
+            let previewSizeImageBuffer = arrayBuffer;
+
+            if (env.IMAGES) {
             // Process full-size image
-            const fullSizeImageResponse = await (
-                await env.IMAGES.input(arrayBuffer)
-                    .transform({ width: 1920 })
-                    .output({ format: imageType })
-            ).response() as Response;
+                const fullSizeImageResponse = await (
+                    await env.IMAGES.input(arrayBuffer)
+                        .transform({ width: 1920 })
+                        .output({ format: imageType })
+                ).response() as Response;
 
-            const resizedImageBuffer = await fullSizeImageResponse.arrayBuffer();
+                fullSizeImageBuffer = await fullSizeImageResponse.arrayBuffer();
 
-            // Process preview image
-            const previewSizeImageResponse = await (
-                await env.IMAGES.input(resizedImageBuffer)
-                    .transform({ width: 300 })
-                    .output({ format: imageType })
-            ).response() as Response;
+                // Process preview image
+                const previewSizeImageResponse = await (
+                    await env.IMAGES.input(fullSizeImageBuffer)
+                        .transform({ width: 300 })
+                        .output({ format: imageType })
+                ).response() as Response;
+
+                previewSizeImageBuffer = await previewSizeImageResponse.arrayBuffer();
+            }
 
             // Save preview image with timestamped name
-            await hubBlob().put(timestampedName, await previewSizeImageResponse.arrayBuffer(), {
+            await hubBlob().put(timestampedName, previewSizeImageBuffer, {
                 addRandomSuffix: false,
                 prefix: previewsPrefix,
                 contentType: imageType
             })
 
             // Save full-size image with timestamped name
-            const result = await hubBlob().put(timestampedName, resizedImageBuffer, {
+            const result = await hubBlob().put(timestampedName, fullSizeImageBuffer, {
                 addRandomSuffix: false,
                 prefix: imagesPrefix,
                 contentType: imageType

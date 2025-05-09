@@ -1,22 +1,14 @@
 export default defineEventHandler(async () => {
-    const result = await hubBlob().list({
-        prefix: 'albums/',
-        folded: true
+    // Get albums from database
+    const dbAlbums = await useDrizzle().select().from(tables.albums).all()
+
+    // Map database albums to the expected format
+    return dbAlbums.map(album => {
+        return {
+            id: album.pathname,
+            name: album.title,
+            path: `albums/${album.pathname}`,
+            dateCreated: album.dateCreated
+        }
     })
-
-    return (result.folders || [])
-        .map(folder => {
-            const fullName = folder.replace('albums/', '')
-
-            // Extract the display name (remove timestamp prefix if present)
-            // Format: YYYYMMDD_HHMMSS_albumname
-            const timestampMatch = fullName.match(/^\d{8}_\d{6}_(.+)$/)
-            const displayName = timestampMatch ? timestampMatch[1] : fullName
-
-            return {
-                id: fullName.replace('/', ''),
-                name: displayName,
-                path: folder
-            }
-        })
 })

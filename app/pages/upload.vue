@@ -136,7 +136,7 @@ async function createNewAlbum() {
     await refreshAlbums()
 
     // Select the newly created album
-    selectedAlbum.value = result.name
+    selectedAlbum.value = result.id
 
     // Reset and hide the new album input
     newAlbumName.value = ''
@@ -221,6 +221,13 @@ async function onFileSelect({ target }: Event) {
     input.value = ''
   }
 }
+
+const albumOptions = computed(() => {
+  return albums.value?.map(album => ({
+    label: album.name,
+    value: album.id
+  })) || []
+})
 </script>
 
 <template>
@@ -244,18 +251,18 @@ async function onFileSelect({ target }: Event) {
       </template>
 
       <div class="space-y-4">
-        <UFormGroup label="Select Album" help="Choose an existing album for your photos">
+        <UFormField label="Select Album" help="Choose an existing album for your photos">
           <USelect
             v-model="selectedAlbum"
-            :options="albums?.map(album => ({ label: album.name, value: album.id })) || []"
+            :items="albumOptions"
             placeholder="Select an album"
             :disabled="isUploading || showNewAlbumInput"
           />
-        </UFormGroup>
+        </UFormField>
 
         <UCollapsible v-model="showNewAlbumInput">
           <UCard class="bg-gray-50 dark:bg-gray-800">
-            <UFormGroup label="New Album Name" help="Enter a name for your new album">
+            <UFormField label="New Album Name" help="Enter a name for your new album">
               <div class="flex space-x-2">
                 <UInput
                   v-model="newAlbumName"
@@ -272,7 +279,7 @@ async function onFileSelect({ target }: Event) {
                   Create
                 </UButton>
               </div>
-            </UFormGroup>
+            </UFormField>
           </UCard>
         </UCollapsible>
       </div>
@@ -291,7 +298,7 @@ async function onFileSelect({ target }: Event) {
         class="mb-4"
       />
 
-      <UFormGroup label="Select Images" help="Choose images to upload to the selected album">
+      <UFormField label="Select Images" help="Choose images to upload to the selected album">
         <UInput
           type="file"
           accept="image/jpeg, image/png"
@@ -304,7 +311,7 @@ async function onFileSelect({ target }: Event) {
             Please select or create an album first
           </p>
         </template>
-      </UFormGroup>
+      </UFormField>
 
       <!-- Processing status -->
       <UAlert

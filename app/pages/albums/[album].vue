@@ -2,14 +2,16 @@
 const route = useRoute()
 const albumId = route.params.album as string
 
-// Extract display name from album ID (remove timestamp if present)
+// Fetch album details
+const {data: album} = await useFetch(`/api/albums/${albumId}`)
+
+// Display name is the album title
 const displayName = computed(() => {
-  const match = albumId.match(/^\d{8}_\d{6}_(.+)$/)
-  return match ? match[1] : albumId
+  return album.value?.name || albumId
 })
 
 // Fetch images for this album
-const { data: images, refresh: refreshImages } = await useFetch(`/api/albums/${albumId}/images`)
+const {data: images, refresh: refreshImages} = await useFetch(`/api/albums/${albumId}/images`)
 
 // Gallery state
 const isGalleryOpen = ref(false)
@@ -24,13 +26,6 @@ function openGallery(index: number) {
 // Define header links
 const links = [
   {
-    label: 'Back to Albums',
-    to: '/albums',
-    icon: 'i-heroicons-arrow-left',
-    color: 'gray',
-    variant: 'ghost'
-  },
-  {
     label: 'Upload to this album',
     to: `/upload?album=${albumId}`,
     icon: 'i-heroicons-arrow-up-tray',
@@ -42,13 +37,16 @@ const links = [
 
 <template>
   <UPage>
-    <UPageHeader :title="displayName" :links="links" />
+    <UPageHeader :title="displayName" :links="links">
+      <template #headline>
+        <UButton :to="`/albums`" icon="i-heroicons-arrow-left" variant="link">Back to Albums</UButton>
+      </template>
+    </UPageHeader>
 
     <UPageBody>
       <UAlert
           v-if="!images || images.length === 0"
           icon="i-heroicons-photo"
-          color="gray"
           title="No images in this album"
           description="Upload your first image to get started."
           class="mb-4"
@@ -72,7 +70,7 @@ const links = [
         >
           <img
               :src="image.previewUrl"
-              :alt="image.name"
+              :alt="image.id"
               class="w-full h-48 object-cover"
           />
         </UCard>
@@ -80,11 +78,11 @@ const links = [
 
       <!-- Image Gallery Modal -->
       <ImageGallery
-        v-if="images && images.length > 0"
-        :images="images"
-        :initial-index="selectedImageIndex"
-        :open="isGalleryOpen"
-        @update:open="isGalleryOpen = $event"
+          v-if="images && images.length > 0"
+          :images="images"
+          :initial-index="selectedImageIndex"
+          :open="isGalleryOpen"
+          @update:open="isGalleryOpen = $event"
       />
     </UPageBody>
   </UPage>
