@@ -29,8 +29,8 @@ const links = [
     label: 'Upload to this album',
     to: `/upload?album=${albumId}`,
     icon: 'i-heroicons-arrow-up-tray',
-    color: 'primary',
-    size: 'lg'
+    color: 'primary' as const,
+    // Remove size property as it's not in ButtonProps type
   }
 ]
 </script>

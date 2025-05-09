@@ -10,7 +10,7 @@ const { data: albums } = await useFetch('/api/albums')
       description="Store and organize your photos in albums"
       :links="[
         { label: 'Upload Images', to: '/upload', color: 'primary' },
-        { label: 'Browse Albums', to: '/albums', color: 'gray' }
+        { label: 'Browse Albums', to: '/albums', color: 'neutral' }
       ]"
     />
 
@@ -18,7 +18,7 @@ const { data: albums } = await useFetch('/api/albums')
       <UAlert
         v-if="!albums || albums.length === 0"
         icon="i-heroicons-information-circle"
-        color="gray"
+        color="neutral"
         title="No albums yet"
         description="Create your first album to get started."
       />
@@ -42,7 +42,7 @@ const { data: albums } = await useFetch('/api/albums')
         <template #footer>
           <UButton
             to="/albums"
-            color="gray"
+            color="neutral"
             variant="ghost"
             trailing-icon="i-heroicons-arrow-right"
           >

@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/image',
     '@nuxt/ui-pro',
-    '@nuxthub/core'
+    '@nuxthub/core',
+    'nuxt-auth-utils'
   ],
   css: ['~/assets/css/main.css'],
   hub: {
@@ -22,6 +23,19 @@ export default defineNuxtConfig({
       },
       images: {
         IMAGES: {},
+      }
+    }
+  },
+
+  // Authentication configuration
+  runtimeConfig: {
+    authUtils: {
+      session: {
+        name: 'photo-gallery-session',
+        password: 'complex-password-at-least-32-chars-long',
+        cookie: {
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+        }
       }
     }
   }

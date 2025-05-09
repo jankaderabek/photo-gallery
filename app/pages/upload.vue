@@ -1,4 +1,8 @@
 <script setup lang="ts">
+// Apply auth middleware
+definePageMeta({
+  middleware: ['admin']
+})
 const route = useRoute()
 const selectedAlbum = ref('')
 const newAlbumName = ref('')
@@ -168,7 +172,7 @@ async function onFileSelect({ target }: Event) {
     const formData = new FormData()
 
     for (let i = 0; i < input.files.length; i++) {
-      const file = input.files[i]
+      const file = input.files[i] as File
 
       // Check if it's an image file
       if (!file.type.startsWith('image/')) {
@@ -336,7 +340,7 @@ const albumOptions = computed(() => {
       <UAlert
         v-if="uploadError"
         icon="i-heroicons-exclamation-triangle"
-        color="red"
+        color="error"
         :title="uploadError"
         class="my-4"
       />

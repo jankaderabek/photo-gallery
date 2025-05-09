@@ -22,7 +22,7 @@ const {data: albums} = await useFetch('/api/albums')
       <UAlert
           v-if="!albums || albums.length === 0"
           icon="i-heroicons-photo-stack"
-          color="gray"
+          color="neutral"
           title="No albums found"
           description="Create your first album to get started."
           class="mb-4"

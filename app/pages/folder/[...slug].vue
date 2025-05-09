@@ -2,7 +2,15 @@
   const route = useRoute()
 
   const folderPath = (route.params.slug as string []).join('/')
-  const { data } = await useFetch('/api/images/list/' + folderPath)
+
+  interface FolderData {
+    folders?: { pathname: string }[];
+    blobs?: {
+      pathname: string;
+    }[];
+  }
+
+  const { data } = await useFetch<FolderData>('/api/images/list/' + folderPath)
 </script>
 
 <template>
@@ -45,7 +53,7 @@
     <UAlert
       v-if="!data || (!data.blobs?.length && !data.folders?.length)"
       icon="i-heroicons-information-circle"
-      color="gray"
+      color="neutral"
       title="No content"
       description="This folder is empty."
     />
