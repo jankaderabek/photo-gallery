@@ -222,12 +222,17 @@ async function onFileSelect({ target }: Event) {
     // Process the response
     const results = await response.json()
     uploadResults.value = results
-    processingStatus.value = ''
+    // Show success message instead of clearing processing status
+    processingStatus.value = 'Upload completed successfully!'
   } catch (error) {
     console.error('Upload error:', error)
     uploadError.value = error instanceof Error ? error.message : 'Unknown error occurred'
   } finally {
     isUploading.value = false
+    // Only clear processing status if there was an error
+    if (uploadError.value) {
+      processingStatus.value = ''
+    }
     // Reset the file input
     input.value = ''
   }
@@ -327,16 +332,16 @@ const albumOptions = computed(() => {
 
       <!-- Processing status -->
       <UAlert
-        v-if="processingStatus"
-        icon="i-heroicons-arrow-path"
-        color="info"
+        v-if="processingStatus && processingStatus.length > 0"
+        :icon="processingStatus.includes('success') ? 'i-heroicons-check-circle' : 'i-heroicons-arrow-path'"
+        :color="processingStatus.includes('success') ? 'success' : 'info'"
         :title="processingStatus"
         class="my-4"
       />
 
       <!-- Loading indicator -->
       <UAlert
-        v-if="isUploading && !processingStatus"
+        v-if="isUploading && (!processingStatus || processingStatus.length === 0)"
         icon="i-heroicons-arrow-path"
         color="info"
         title="Uploading files..."
