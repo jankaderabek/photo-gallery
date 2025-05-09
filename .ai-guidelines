@@ -1,0 +1,6 @@
+# Your guidelines for this project
+
+- use Nuxt UI Pro for components, try to use as much as native way
+- after changes check error in console after npm run dev
+- check type error by running command npx nuxi typecheck
+- dont add unnecessary comments
