@@ -6,7 +6,7 @@ definePageMeta({
 const route = useRoute()
 const selectedAlbum = ref('')
 const newAlbumName = ref('')
-const showNewAlbumInput = ref(false)
+const showNewAlbumInput = ref(false) // Controls visibility of new album form
 const isUploading = ref(false)
 const isCreatingAlbum = ref(false)
 const uploadResults = ref<any[]>([])
@@ -28,6 +28,13 @@ watchEffect(() => {
     if (albumExists) {
       selectedAlbum.value = albumId
     }
+  }
+})
+
+// Hide new album section when an album is selected
+watch(selectedAlbum, (newValue) => {
+  if (newValue) {
+    showNewAlbumInput.value = false
   }
 })
 
@@ -260,11 +267,12 @@ const albumOptions = computed(() => {
             v-model="selectedAlbum"
             :items="albumOptions"
             placeholder="Select an album"
-            :disabled="isUploading || showNewAlbumInput"
+            :disabled="isUploading"
           />
         </UFormField>
 
-        <UCollapsible v-model="showNewAlbumInput">
+        <!-- New Album Form - Only shown when showNewAlbumInput is true -->
+        <div v-if="showNewAlbumInput" class="mt-4">
           <UCard class="bg-gray-50 dark:bg-gray-800">
             <UFormField label="New Album Name" help="Enter a name for your new album">
               <div class="flex space-x-2">
@@ -285,7 +293,7 @@ const albumOptions = computed(() => {
               </div>
             </UFormField>
           </UCard>
-        </UCollapsible>
+        </div>
       </div>
     </UCard>
 

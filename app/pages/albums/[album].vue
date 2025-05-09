@@ -23,16 +23,23 @@ function openGallery(index: number) {
   isGalleryOpen.value = true
 }
 
-// Define header links
-const links = [
-  {
-    label: 'Upload to this album',
-    to: `/upload?album=${albumId}`,
-    icon: 'i-heroicons-arrow-up-tray',
-    color: 'primary' as const,
-    // Remove size property as it's not in ButtonProps type
-  }
-]
+// Get user session to check role
+const { user } = useUserSession()
+const isAdmin = computed(() => user.value?.role === 'admin')
+
+// Define header links - only for admin users
+const links = computed(() => {
+  if (!isAdmin.value) return []
+
+  return [
+    {
+      label: 'Upload to this album',
+      to: `/upload?album=${albumId}`,
+      icon: 'i-heroicons-arrow-up-tray',
+      color: 'primary' as const,
+    }
+  ]
+})
 </script>
 
 <template>
@@ -53,6 +60,7 @@ const links = [
       >
         <template #actions>
           <UButton
+              v-if="isAdmin"
               :to="`/upload?album=${albumId}`"
               color="primary"
           >

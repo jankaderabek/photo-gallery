@@ -1,6 +1,10 @@
 <script setup lang="ts">
 // Fetch all albums
 const {data: albums} = await useFetch('/api/albums')
+
+// Get user session to check role
+const { user } = useUserSession()
+const isAdmin = computed(() => user.value?.role === 'admin')
 </script>
 
 <template>
@@ -8,6 +12,7 @@ const {data: albums} = await useFetch('/api/albums')
     <UPageHeader title="Albums">
       <template #right>
         <UButton
+            v-if="isAdmin"
             to="/upload"
             color="primary"
             icon="i-heroicons-arrow-up-tray"
@@ -29,6 +34,7 @@ const {data: albums} = await useFetch('/api/albums')
       >
         <template #actions>
           <UButton
+              v-if="isAdmin"
               to="/upload"
               color="primary"
           >

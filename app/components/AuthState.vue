@@ -8,7 +8,7 @@ const status = computed(() => loggedIn.value ? 'authenticated' : 'unauthenticate
     <template v-if="status === 'authenticated'">
       <slot :loggedIn="loggedIn" :user="user">
         <!-- Default authenticated content -->
-        <div>Logged in as {{ user?.name }}</div>
+        <div>Logged in as {{ user?.email }}</div>
       </slot>
     </template>
 

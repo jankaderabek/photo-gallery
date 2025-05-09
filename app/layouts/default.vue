@@ -24,6 +24,7 @@ async function handleLogout() {
             Albums
           </UButton>
           <UButton
+              v-if="user?.role === 'admin'"
               to="/upload"
               variant="ghost"
               color="neutral"
@@ -46,16 +47,13 @@ async function handleLogout() {
             <!-- User menu -->
             <UPopover>
               <UButton color="neutral" variant="ghost" trailing-icon="i-heroicons-chevron-down">
-                {{ user?.name }}
+                {{ user?.email }}
               </UButton>
 
               <template #content>
                 <div class="p-2 w-64">
                   <div class="p-2 mb-2 border-b">
-                    <div class="flex items-center gap-2">
-                      <UIcon name="i-heroicons-user-circle" class="text-gray-500" />
-                      <span>{{ user?.name }}</span>
-                    </div>
+
                     <div class="flex items-center gap-2 mt-1">
                       <UIcon name="i-heroicons-envelope" class="text-gray-500" />
                       <span class="text-sm text-gray-500">{{ user?.email }}</span>

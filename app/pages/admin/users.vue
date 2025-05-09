@@ -5,7 +5,7 @@ definePageMeta({
 })
 
 // Fetch users
-const { data: users, refresh: refreshUsers } = await useFetch('/api/admin/users')
+const {data: users, refresh: refreshUsers} = await useFetch('/api/admin/users')
 
 // New user form
 const showNewUserForm = ref(false)
@@ -18,6 +18,21 @@ const newUser = reactive({
 
 const isLoading = ref(false)
 const error = ref('')
+// Always show password in plaintext
+
+// Function to generate a random password
+function generatePassword() {
+  const length = 12
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' // No special chars
+  let password = ''
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length)
+    password += charset[randomIndex]
+  }
+
+  newUser.password = password
+}
 
 async function createUser() {
   isLoading.value = true
@@ -34,6 +49,7 @@ async function createUser() {
     newUser.email = ''
     newUser.password = ''
     newUser.role = 'user'
+    // Always keep password visible
     showNewUserForm.value = false
 
     await refreshUsers()
@@ -50,16 +66,16 @@ async function createUser() {
     <UPageHeader title="User Management">
       <template #right>
         <UButton
-          @click="showNewUserForm = !showNewUserForm"
-          color="primary"
-          :icon="showNewUserForm ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
+            @click="showNewUserForm = !showNewUserForm"
+            color="primary"
+            :icon="showNewUserForm ? 'i-heroicons-x-mark' : 'i-heroicons-plus'"
         >
           {{ showNewUserForm ? 'Cancel' : 'Add User' }}
         </UButton>
       </template>
     </UPageHeader>
 
-    <UDivider class="my-6" />
+    <UDivider class="my-6"/>
 
     <!-- New User Form -->
     <UCollapsible v-model="showNewUserForm">
@@ -68,27 +84,43 @@ async function createUser() {
           <h2 class="text-xl font-semibold">Add New User</h2>
         </template>
 
-        <UForm :state="newUser" @submit="createUser" spacey4>
+        <UForm :state="newUser" @submit="createUser" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UFormField label="Name" name="name">
-              <UInput v-model="newUser.name" placeholder="Enter name" />
+              <UInput v-model="newUser.name" placeholder="Enter name"/>
             </UFormField>
 
             <UFormField label="Email" name="email">
-              <UInput v-model="newUser.email" type="email" placeholder="Enter email" />
+              <UInput v-model="newUser.email" type="email" placeholder="Enter email"/>
             </UFormField>
+          </div>
 
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UFormField label="Password" name="password">
-              <UInput v-model="newUser.password" type="password" placeholder="Enter password" />
+              <div class="flex items-center space-x-2">
+                <UInput
+                    v-model="newUser.password"
+                    type="text"
+                    placeholder="Enter password"
+                />
+                <UButton
+                    color="primary"
+                    variant="soft"
+                    @click="generatePassword"
+                    class="whitespace-nowrap"
+                >
+                  Generate
+                </UButton>
+              </div>
             </UFormField>
 
             <UFormField label="Role" name="role">
               <USelect
-                v-model="newUser.role"
-                :items="[
-                  { label: 'User', value: 'user' },
-                  { label: 'Admin', value: 'admin' }
-                ]"
+                  v-model="newUser.role"
+                  :items="[
+                    { label: 'User', value: 'user' },
+                    { label: 'Admin', value: 'admin' }
+                  ]"
               />
             </UFormField>
           </div>
@@ -113,7 +145,7 @@ async function createUser() {
       </template>
 
       <UTable
-        :data="users || []"
+          :data="users || []"
       >
         <template #cell-role="{ row }">
           <UBadge :color="row.getValue('role') === 'admin' ? 'error' : 'info'">

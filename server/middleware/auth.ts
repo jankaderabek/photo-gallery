@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
-  // Skip authentication for login and register routes
-  if (event.path.startsWith('/api/auth/')) {
+  // Skip authentication for login route only
+  if (event.path === '/api/auth/login' || event.path === '/api/auth/logout') {
     return
   }
 
@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   if (event.path.startsWith('/api/admin/')) {
     try {
       const { user } = await requireUserSession(event)
-      
+
       if (user.role !== 'admin') {
         throw createError({
           statusCode: 403,

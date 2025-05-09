@@ -9,6 +9,16 @@ const registerSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  // Require a user session and check if the user is an admin
+  const { user } = await requireUserSession(event)
+
+  if (user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      message: 'Forbidden: Admin access required'
+    })
+  }
+
   // Validate the request body
   const { email, password, name, role = 'user' } = await readValidatedBody(event, registerSchema.parse)
 
@@ -30,7 +40,7 @@ export default defineEventHandler(async (event) => {
   const hashedPassword = await hashPassword(password)
 
   // Create the user
-  const user = await useDrizzle()
+  const newUser = await useDrizzle()
     .insert(tables.users)
     .values({
       email,
@@ -42,21 +52,11 @@ export default defineEventHandler(async (event) => {
     .returning()
     .get()
 
-  // Set the user session
-  await setUserSession(event, {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role
-    },
-    loggedInAt: Date.now()
-  })
-
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role
+    id: newUser.id,
+    email: newUser.email,
+    name: newUser.name,
+    role: newUser.role,
+    createdAt: newUser.createdAt
   }
 })
