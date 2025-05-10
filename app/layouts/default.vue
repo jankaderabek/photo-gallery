@@ -37,15 +37,40 @@ async function handleLogout() {
 
           <!-- Auth buttons -->
           <template v-if="loggedIn">
-            <!-- Admin link -->
-            <UButton
-              v-if="user?.role === 'admin'"
-              to="/admin/users"
-              variant="ghost"
-              color="neutral"
-            >
-              Admin
-            </UButton>
+            <!-- Admin dropdown -->
+            <UPopover v-if="user?.role === 'admin'">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                trailing-icon="i-heroicons-chevron-down"
+              >
+                Admin
+              </UButton>
+
+              <template #content>
+                <div class="p-2 w-48">
+                  <UButton
+                    block
+                    to="/admin/users"
+                    color="neutral"
+                    variant="ghost"
+                    icon="i-heroicons-user-group"
+                    class="mb-1"
+                  >
+                    Users
+                  </UButton>
+                  <UButton
+                    block
+                    to="/admin/albums"
+                    color="neutral"
+                    variant="ghost"
+                    icon="i-heroicons-photo-stack"
+                  >
+                    Albums
+                  </UButton>
+                </div>
+              </template>
+            </UPopover>
 
             <!-- User menu -->
             <UPopover>
