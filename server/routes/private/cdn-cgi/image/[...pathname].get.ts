@@ -197,6 +197,8 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  setHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
+
   // server from cache if exists
   const cachedImage = await hubBlob().get(`cache/${pathname}`)
 
