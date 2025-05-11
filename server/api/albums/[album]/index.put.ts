@@ -23,12 +23,20 @@ export default defineEventHandler(async (event) => {
 
   // Get request body
   const body = await readBody(event)
-  const { title } = body
+  const { title, isPublic } = body
 
   if (!title || typeof title !== 'string' || title.trim() === '') {
     throw createError({
       statusCode: 400,
       message: 'Album title is required',
+    })
+  }
+
+  // isPublic is optional, but if provided must be a boolean
+  if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+    throw createError({
+      statusCode: 400,
+      message: 'isPublic must be a boolean',
     })
   }
 
@@ -47,12 +55,16 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Update album title in the database
+    // Update album in the database
+    const updateData: { title: string, isPublic?: boolean } = { title }
+
+    // Only include isPublic in the update if it was provided
+    if (isPublic !== undefined) {
+      updateData.isPublic = isPublic
+    }
     const updatedAlbum = await useDrizzle()
       .update(tables.albums)
-      .set({
-        title,
-      })
+      .set(updateData)
       .where(eq(tables.albums.pathname, albumPathname))
       .returning()
       .get()
@@ -64,11 +76,12 @@ export default defineEventHandler(async (event) => {
         name: updatedAlbum.title,
         path: `albums/${updatedAlbum.pathname}`,
         dateCreated: updatedAlbum.dateCreated,
+        isPublic: updatedAlbum.isPublic,
       },
     }
   }
-  catch (error) {
-    console.error('Error updating album:', error)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  catch (_) {
     throw createError({
       statusCode: 500,
       message: 'Failed to update album',

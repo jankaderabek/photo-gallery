@@ -166,7 +166,6 @@ async function createNewAlbum() {
     showNewAlbumInput.value = false
   }
   catch (error) {
-    console.error('Error creating album:', error)
     uploadError.value = error instanceof Error ? error.message : 'Unknown error occurred'
   }
   finally {
@@ -211,8 +210,8 @@ async function onFileSelect({ target }: Event) {
           processingStatus.value = `Processed ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB → ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB)`
         }
       }
-      catch (error) {
-        console.warn(`Failed to resize ${file.name}, uploading original:`, error)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      catch (_) {
         processingStatus.value = `Could not resize ${file.name}, uploading original`
       }
 
@@ -241,7 +240,6 @@ async function onFileSelect({ target }: Event) {
     processingStatus.value = 'Upload completed successfully!'
   }
   catch (error) {
-    console.error('Upload error:', error)
     uploadError.value = error instanceof Error ? error.message : 'Unknown error occurred'
   }
   finally {

@@ -3,15 +3,20 @@ const route = useRoute()
 const albumId = route.params.album as string
 
 // Fetch album details
-const { data: album } = await useFetch(`/api/albums/${albumId}`)
+const { data: album, error: albumError } = await useFetch(`/api/albums/${albumId}`)
 
 // Display name is the album title
 const displayName = computed(() => {
   return album.value?.name || albumId
 })
 
-// Fetch images for this album
-const { data: images, refresh: refreshImages } = await useFetch(`/api/albums/${albumId}/images`)
+// Check if we have access to this album
+const hasAccess = computed(() => !!album.value && !albumError.value)
+
+// Fetch images for this album only if we have access
+const { data: images, refresh: refreshImages, error: _imagesError } = await useFetch(
+  () => hasAccess.value ? `/api/albums/${albumId}/images` : null,
+)
 
 // Gallery state
 const isGalleryOpen = ref(false)
@@ -72,8 +77,8 @@ async function deleteAlbum() {
       navigateTo('/albums')
     }
   }
-  catch (error) {
-    console.error('Error deleting album:', error)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  catch (_) {
     deleteAlbumError.value = 'Failed to delete album'
   }
   finally {
@@ -101,46 +106,76 @@ async function deleteAlbum() {
       </UPageHeader>
 
       <UPageBody>
-        <UAlert
-          v-if="!images || images.length === 0"
-          icon="i-heroicons-photo"
-          title="No images in this album"
-          description="Upload your first image to get started."
-          class="mb-4"
-        >
-          <template #actions>
-            <UButton
-              v-if="isAdmin"
-              :to="`/upload?album=${albumId}`"
-              color="primary"
-            >
-              Upload to this album
-            </UButton>
-          </template>
-        </UAlert>
-
-        <UPageGrid
-          v-else
-          cols="1:4"
-          class="gap-4"
-        >
-          <UCard
-            v-for="(image, index) in images"
-            :key="image.id"
-            class="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-            @click="openGallery(index)"
+        <!-- Access denied message -->
+        <template v-if="!hasAccess">
+          <UAlert
+            icon="i-heroicons-lock-closed"
+            color="orange"
+            title="Access Denied"
+            description="You don't have permission to view this private album."
+            class="mb-4"
           >
-            <img
-              :src="image.previewUrl"
-              :alt="image.id"
-              class="w-full h-48 object-cover"
+            <template #actions>
+              <UButton
+                to="/albums"
+                color="gray"
+              >
+                Back to Albums
+              </UButton>
+              <UButton
+                v-if="!user"
+                to="/auth/login"
+                color="primary"
+              >
+                Login
+              </UButton>
+            </template>
+          </UAlert>
+        </template>
+
+        <!-- Album content when access is granted -->
+        <template v-else>
+          <UAlert
+            v-if="!images || images.length === 0"
+            icon="i-heroicons-photo"
+            title="No images in this album"
+            description="Upload your first image to get started."
+            class="mb-4"
+          >
+            <template #actions>
+              <UButton
+                v-if="isAdmin"
+                :to="`/upload?album=${albumId}`"
+                color="primary"
+              >
+                Upload to this album
+              </UButton>
+            </template>
+          </UAlert>
+
+          <UPageGrid
+            v-else
+            cols="1:4"
+            class="gap-4"
+          >
+            <UCard
+              v-for="(image, index) in images"
+              :key="image.id"
+              class="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+              @click="openGallery(index)"
             >
-          </UCard>
-        </UPageGrid>
+              <img
+                :src="image.previewUrl"
+                :alt="image.id"
+                class="w-full h-48 object-cover"
+              >
+            </UCard>
+          </UPageGrid>
+        </template>
 
         <!-- Image Gallery Modal -->
         <ImageGallery
-          v-if="images && images.length > 0"
+          v-if="hasAccess && images && images.length > 0"
           :images="images"
           :initial-index="selectedImageIndex"
           :open="isGalleryOpen"

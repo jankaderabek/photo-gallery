@@ -1,6 +1,17 @@
 export default defineEventHandler(async (event) => {
+  // Require admin session
+  const { user } = await requireUserSession(event)
+
+  if (user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      message: 'Forbidden: Admin access required',
+    })
+  }
+
   const body = await readBody(event)
   const albumName = body.name
+  const isPublic = body.isPublic !== undefined ? !!body.isPublic : true // Default to true if not provided
 
   if (!albumName) {
     throw createError({
@@ -32,6 +43,7 @@ export default defineEventHandler(async (event) => {
       title: albumName,
       pathname: sanitizedPathname,
       dateCreated: now,
+      isPublic,
     })
     .returning()
     .get()
@@ -40,6 +52,7 @@ export default defineEventHandler(async (event) => {
     success: true,
     id: sanitizedPathname,
     name: albumName,
+    isPublic,
     album,
   }
 })

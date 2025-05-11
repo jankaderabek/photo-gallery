@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     '@nuxt/ui-pro',
     '@nuxthub/core',
     'nuxt-auth-utils',
+    'nuxt-mcp',
   ],
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],

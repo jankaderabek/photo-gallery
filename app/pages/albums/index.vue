@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { UBadge } from '#components'
+
 // Fetch all albums
 const { data: albums } = await useFetch('/api/albums')
 
@@ -58,7 +60,18 @@ const isAdmin = computed(() => user.value?.role === 'admin')
           >
             <UCard class="hover:shadow-lg transition-shadow">
               <template #header>
-                <h2 class="text-xl font-semibold">{{ album.name }}</h2>
+                <div class="flex justify-between items-center">
+                  <h2 class="text-xl font-semibold">{{ album.name }}</h2>
+                  <UBadge
+                    v-if="album.isPublic === false"
+                    color="orange"
+                    variant="subtle"
+                    size="sm"
+                    class="ml-2"
+                  >
+                    Private
+                  </UBadge>
+                </div>
               </template>
             </UCard>
           </NuxtLink>

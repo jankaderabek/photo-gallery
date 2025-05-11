@@ -5,6 +5,7 @@ export const albums = sqliteTable('albums', {
   title: text('title').notNull(),
   pathname: text('pathname').notNull().unique(),
   dateCreated: integer('date_created', { mode: 'timestamp' }).notNull(),
+  isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(true),
 })
 
 // Define user roles as an enum
@@ -17,4 +18,12 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   role: text('role').notNull().$type<UserRole>().default('user'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+})
+
+// Table to track user access to private albums
+export const albumAccess = sqliteTable('album_access', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  albumId: integer('album_id').notNull().references(() => albums.id),
+  userId: integer('user_id').notNull().references(() => users.id),
+  dateGranted: integer('date_granted', { mode: 'timestamp' }).notNull(),
 })
