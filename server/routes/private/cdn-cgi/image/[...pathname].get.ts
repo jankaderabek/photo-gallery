@@ -127,7 +127,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get album pathname (second-to-last element when splitting by /)
-  const albumPathname = pathParts[pathParts.length - 1]
+  const albumPathname = pathParts[pathParts.length - 2]
 
   // Get album from database to check access permissions
   const album = await useDrizzle()
