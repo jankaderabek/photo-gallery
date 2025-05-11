@@ -21,11 +21,23 @@ export default defineEventHandler(async (event) => {
   }
 
   if (env.IMAGES) {
+    // check if already in resized cache
+    const resizedImage = await hubBlob().get(`resized/${pathname}`)
+    if (resizedImage) {
+      return resizedImage
+    }
+
     const imageResponse = await (
       await env.IMAGES.input(originalImage)
         .transform(cloudflareImagesParameters)
         .output({ format: 'image/webp' })
     ).response() as Response
+
+    // put into resized cache
+    await hubBlob().put(pathname, await imageResponse.arrayBuffer(), {
+      prefix: 'resized',
+      contentType: 'image/webp',
+    })
 
     return imageResponse
   }

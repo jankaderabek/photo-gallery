@@ -40,4 +40,18 @@ export default defineNuxtConfig({
       },
     },
   },
+  image: {
+    provider: 'cloudflare',
+    cloudflare: {
+      baseURL: '/private',
+    },
+    presets: {
+      preview: {
+        modifiers: {
+          format: 'webp',
+          width: 300,
+        },
+      },
+    },
+  },
 })

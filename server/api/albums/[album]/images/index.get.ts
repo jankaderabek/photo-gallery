@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
 
         return {
           id: blob.pathname,
-          url: `/images/${blob.pathname}`,
+          url: `${blob.pathname}`,
           previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
           uploadedAt: blob.uploadedAt,
         }
@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
 
           return {
             id: blob.pathname,
-            url: `/images/${blob.pathname}`,
+            url: `${blob.pathname}`,
             previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
             uploadedAt: blob.uploadedAt,
           }
@@ -112,7 +112,7 @@ export default defineEventHandler(async (event) => {
 
             return {
               id: blob.pathname,
-              url: `/images/${blob.pathname}`,
+              url: blob.pathname,
               previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
               uploadedAt: blob.uploadedAt,
             }

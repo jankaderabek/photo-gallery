@@ -164,11 +164,12 @@ async function deleteAlbum() {
               class="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
               @click="openGallery(index)"
             >
-              <img
-                :src="image.previewUrl"
+              <NuxtImg
+                :src="image.url"
                 :alt="image.id"
                 class="w-full h-48 object-cover"
-              >
+                preset="preview"
+              />
             </UCard>
           </UPageGrid>
         </template>

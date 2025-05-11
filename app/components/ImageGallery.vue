@@ -239,14 +239,14 @@ defineShortcuts({
             name="fade"
             mode="out-in"
           >
-            <img
-              :key="currentImage.id"
+            <NuxtImg
               :src="currentImage.url"
               :alt="currentImage.id.split('/').pop()"
               class="max-h-full max-w-full object-contain"
+              sizes="100vw sm:50vw md:400px"
               @load="handleImageLoad"
               @error="handleImageError"
-            >
+            />
           </Transition>
         </div>
 
