@@ -248,8 +248,6 @@ async function onFileSelect({ target }: Event) {
     if (uploadError.value) {
       processingStatus.value = ''
     }
-    // Reset the file input
-    input.value = ''
   }
 }
 
