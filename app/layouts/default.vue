@@ -121,9 +121,7 @@ async function handleLogout() {
       </UHeader>
 
       <UMain>
-        <UContainer>
-          <slot />
-        </UContainer>
+        <slot />
       </UMain>
 
       <UFooter class="border-t border-gray-200 dark:border-gray-800">

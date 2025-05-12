@@ -10,73 +10,75 @@ const isAdmin = computed(() => user.value?.role === 'admin')
 </script>
 
 <template>
-  <UPage>
-    <UPageHeader title="Albums">
-      <template #right>
-        <UButton
-          v-if="isAdmin"
-          to="/upload"
-          color="primary"
-          icon="i-heroicons-arrow-up-tray"
-        >
-          Upload Images
-        </UButton>
-      </template>
-    </UPageHeader>
-
-    <UPageBody>
-      <UAlert
-        v-if="!albums || albums.length === 0"
-        icon="i-heroicons-photo-stack"
-        color="neutral"
-        title="No albums found"
-        description="Create your first album to get started."
-        class="mb-4"
-      >
-        <template #actions>
+  <UContainer>
+    <UPage>
+      <UPageHeader title="Albums">
+        <template #right>
           <UButton
             v-if="isAdmin"
             to="/upload"
             color="primary"
+            icon="i-heroicons-arrow-up-tray"
           >
-            Create your first album
+            Upload Images
           </UButton>
         </template>
-      </UAlert>
+      </UPageHeader>
 
-      <UPageGrid
-        v-else
-        cols="1:3"
-        class="gap-6"
-      >
-        <div
-          v-for="album in albums"
-          :key="album.id"
-          class="cursor-pointer"
+      <UPageBody>
+        <UAlert
+          v-if="!albums || albums.length === 0"
+          icon="i-heroicons-photo-stack"
+          color="neutral"
+          title="No albums found"
+          description="Create your first album to get started."
+          class="mb-4"
         >
-          <NuxtLink
-            :to="`/albums/${album.id}`"
-            class="block"
+          <template #actions>
+            <UButton
+              v-if="isAdmin"
+              to="/upload"
+              color="primary"
+            >
+              Create your first album
+            </UButton>
+          </template>
+        </UAlert>
+
+        <UPageGrid
+          v-else
+          cols="1:3"
+          class="gap-6"
+        >
+          <div
+            v-for="album in albums"
+            :key="album.id"
+            class="cursor-pointer"
           >
-            <UCard class="hover:shadow-lg transition-shadow">
-              <template #header>
-                <div class="flex justify-between items-center">
-                  <h2 class="text-xl font-semibold">{{ album.name }}</h2>
-                  <UBadge
-                    v-if="album.isPublic === false"
-                    color="orange"
-                    variant="subtle"
-                    size="sm"
-                    class="ml-2"
-                  >
-                    Private
-                  </UBadge>
-                </div>
-              </template>
-            </UCard>
-          </NuxtLink>
-        </div>
-      </UPageGrid>
-    </UPageBody>
-  </UPage>
+            <NuxtLink
+              :to="`/albums/${album.id}`"
+              class="block"
+            >
+              <UCard class="hover:shadow-lg transition-shadow">
+                <template #header>
+                  <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">{{ album.name }}</h2>
+                    <UBadge
+                      v-if="album.isPublic === false"
+                      color="orange"
+                      variant="subtle"
+                      size="sm"
+                      class="ml-2"
+                    >
+                      Private
+                    </UBadge>
+                  </div>
+                </template>
+              </UCard>
+            </NuxtLink>
+          </div>
+        </UPageGrid>
+      </UPageBody>
+    </UPage>
+  </UContainer>
 </template>

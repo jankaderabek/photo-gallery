@@ -88,7 +88,7 @@ async function deleteAlbum() {
 </script>
 
 <template>
-  <div>
+  <div class="px-2">
     <UPage>
       <UPageHeader
         :title="displayName"
@@ -153,25 +153,20 @@ async function deleteAlbum() {
             </template>
           </UAlert>
 
-          <UPageGrid
+          <div
             v-else
-            cols="1:4"
-            class="gap-4"
+            class="grid lg:grid-cols-[repeat(auto-fill,minmax(320px,800px))] gap-2 justify-center"
           >
-            <UCard
+            <NuxtImg
               v-for="(image, index) in images"
               :key="image.id"
-              class="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+              :src="image.url"
+              :alt="image.id"
+              class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow"
+              sizes="100vw md:800px"
               @click="openGallery(index)"
-            >
-              <NuxtImg
-                :src="image.url"
-                :alt="image.id"
-                class="w-full h-48 object-cover"
-                preset="preview"
-              />
-            </UCard>
-          </UPageGrid>
+            />
+          </div>
         </template>
 
         <!-- Image Gallery Modal -->
