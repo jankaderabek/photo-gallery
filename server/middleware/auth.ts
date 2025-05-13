@@ -1,6 +1,12 @@
 export default defineEventHandler(async (event) => {
-  // Skip authentication for login route only
-  if (event.path === '/api/auth/login' || event.path === '/api/auth/logout') {
+  // Skip authentication for auth routes
+  if (
+    event.path === '/api/auth/login'
+    || event.path === '/api/auth/logout'
+    || event.path === '/api/auth/request-code'
+    || event.path === '/api/auth/verify-code'
+    || event.path === '/api/auth/verify'
+  ) {
     return
   }
 

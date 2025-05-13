@@ -48,6 +48,8 @@ export default defineEventHandler(async (event) => {
       name,
       role: role as UserRole,
       createdAt: new Date(),
+      verificationToken: null,
+      verificationTokenExpiry: null,
     })
     .returning()
     .get()

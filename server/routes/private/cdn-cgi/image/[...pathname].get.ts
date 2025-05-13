@@ -183,9 +183,9 @@ export default defineEventHandler(async (event) => {
         // User has access - continue with the request
       }
     }
-    catch (error: any) {
+    catch (error: unknown) {
       // If error is already a HTTP error, rethrow it
-      if (error.statusCode) {
+      if (typeof error === 'object' && error !== null && 'statusCode' in error) {
         throw error
       }
 

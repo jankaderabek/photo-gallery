@@ -7,7 +7,13 @@ export default defineNuxtConfig({
     '@nuxthub/core',
     'nuxt-auth-utils',
     'nuxt-mcp',
+    'nuxt-resend',
   ],
+  $development: {
+    hub: {
+      remote: true,
+    },
+  },
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
@@ -21,6 +27,10 @@ export default defineNuxtConfig({
           maxAge: 60 * 60 * 24 * 7, // 1 week
         },
       },
+    },
+    resend: {
+      apiKey: process.env.RESEND_API_KEY,
+      defaultFrom: 'Photo Gallery <info@gallery.jankaderabek.eu>',
     },
   },
   future: {

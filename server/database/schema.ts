@@ -14,10 +14,12 @@ export type UserRole = 'user' | 'admin'
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   email: text('email').notNull().unique(),
-  password: text('password').notNull(),
+  password: text('password'),
   name: text('name').notNull(),
   role: text('role').notNull().$type<UserRole>().default('user'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  verificationToken: text('verification_token'),
+  verificationTokenExpiry: integer('verification_token_expiry', { mode: 'timestamp' }),
 })
 
 // Table to track user access to private albums

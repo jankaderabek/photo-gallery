@@ -155,15 +155,16 @@ async function deleteAlbum() {
 
           <div
             v-else
-            class="grid lg:grid-cols-[repeat(auto-fill,minmax(320px,800px))] gap-2 justify-center"
+            class="grid lg:grid-cols-[repeat(auto-fill,minmax(500px,1fr))] gap-2 items-center"
           >
             <NuxtImg
               v-for="(image, index) in images"
               :key="image.id"
               :src="image.url"
               :alt="image.id"
-              class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow"
+              class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32"
               sizes="100vw md:800px"
+              loading="lazy"
               @click="openGallery(index)"
             />
           </div>
