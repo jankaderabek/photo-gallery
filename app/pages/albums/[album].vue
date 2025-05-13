@@ -160,10 +160,13 @@ async function deleteAlbum() {
             <NuxtImg
               v-for="(image, index) in images"
               :key="image.id"
+              placeholder
               :src="image.url"
               :alt="image.id"
               class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32"
               sizes="100vw md:800px"
+              format="auto"
+              quality="90"
               loading="lazy"
               @click="openGallery(index)"
             />
