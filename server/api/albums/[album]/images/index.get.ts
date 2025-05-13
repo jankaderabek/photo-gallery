@@ -49,7 +49,8 @@ export default defineEventHandler(async (event) => {
       .select()
       .from(tables.images)
       .where(eq(tables.images.albumId, album.id))
-      .orderBy(desc(tables.images.uploadedAt))
+      // Sort by uploadedAt and id in descending order (newest first)
+      .orderBy(desc(tables.images.uploadedAt), desc(tables.images.id))
       .limit(limit)
       .offset(offset)
 
@@ -101,7 +102,8 @@ export default defineEventHandler(async (event) => {
         .select()
         .from(tables.images)
         .where(eq(tables.images.albumId, album.id))
-        .orderBy(desc(tables.images.uploadedAt))
+        // Sort by uploadedAt and id in descending order (newest first)
+        .orderBy(desc(tables.images.uploadedAt), desc(tables.images.id))
         .limit(limit)
         .offset(offset)
 
@@ -119,6 +121,7 @@ export default defineEventHandler(async (event) => {
             url: image.pathname,
             previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
             uploadedAt: image.uploadedAt.toISOString(),
+            photoCreatedAt: image.photoCreatedAt ? image.photoCreatedAt.toISOString() : null,
             imageId: image.id,
           }
         }),
@@ -158,7 +161,8 @@ export default defineEventHandler(async (event) => {
           .select()
           .from(tables.images)
           .where(eq(tables.images.albumId, album.id))
-          .orderBy(desc(tables.images.uploadedAt))
+          // Sort by uploadedAt and id in descending order (newest first)
+          .orderBy(desc(tables.images.uploadedAt), desc(tables.images.id))
           .limit(limit)
           .offset(offset)
 
@@ -176,6 +180,7 @@ export default defineEventHandler(async (event) => {
               url: image.pathname,
               previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
               uploadedAt: image.uploadedAt.toISOString(),
+              photoCreatedAt: image.photoCreatedAt ? image.photoCreatedAt.toISOString() : null,
               imageId: image.id,
             }
           }),

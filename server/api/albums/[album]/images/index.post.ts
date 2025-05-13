@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm'
+import exifr from 'exifr'
 import { tables, useDrizzle } from '../../../../utils/drizzle'
 
 export default defineEventHandler(async (event) => {
@@ -46,6 +47,22 @@ export default defineEventHandler(async (event) => {
 
       const arrayBuffer = await file.arrayBuffer()
       const imageType = 'image/webp'
+
+      // Extract EXIF data to get photo creation date
+      let photoCreatedAt = null
+      try {
+        // Only parse the specific EXIF tags we need for better performance
+        const exifData = await exifr.parse(new Uint8Array(arrayBuffer), ['DateTimeOriginal', 'CreateDate'])
+
+        if (exifData && (exifData.DateTimeOriginal || exifData.CreateDate)) {
+          // Use DateTimeOriginal or CreateDate as fallback
+          photoCreatedAt = exifData.DateTimeOriginal || exifData.CreateDate
+        }
+      }
+      catch (exifError) {
+        console.warn(`Could not extract EXIF data from ${file.name}:`, exifError)
+        // Continue without EXIF data
+      }
 
       // Generate timestamp prefix for sorting (YYYYMMDD_HHMMSS_)
       const now = new Date()
@@ -105,6 +122,7 @@ export default defineEventHandler(async (event) => {
           filename: timestampedName,
           originalFilename: originalName,
           uploadedAt: now,
+          photoCreatedAt: photoCreatedAt ? new Date(photoCreatedAt) : null,
         })
         .returning()
         .get()
@@ -116,6 +134,7 @@ export default defineEventHandler(async (event) => {
         path: imagePath,
         result,
         imageId: imageRecord.id,
+        photoCreatedAt: imageRecord.photoCreatedAt ? imageRecord.photoCreatedAt.toISOString() : null,
       })
     }
     catch (error) {
