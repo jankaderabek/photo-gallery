@@ -76,7 +76,6 @@ export default defineEventHandler(async (event) => {
       const timestampedName = timestamp + originalName
 
       let fullSizeImageBuffer = arrayBuffer
-      let previewSizeImageBuffer = arrayBuffer
 
       if (env.IMAGES) {
         // Process full-size image
@@ -87,23 +86,7 @@ export default defineEventHandler(async (event) => {
         ).response() as Response
 
         fullSizeImageBuffer = await fullSizeImageResponse.arrayBuffer()
-
-        // Process preview image
-        const previewSizeImageResponse = await (
-          await env.IMAGES.input(fullSizeImageBuffer)
-            .transform({ width: 300 })
-            .output({ format: imageType })
-        ).response() as Response
-
-        previewSizeImageBuffer = await previewSizeImageResponse.arrayBuffer()
       }
-
-      // Save preview image with timestamped name
-      await hubBlob().put(timestampedName, previewSizeImageBuffer, {
-        addRandomSuffix: false,
-        prefix: previewsPrefix,
-        contentType: imageType,
-      })
 
       // Save full-size image with timestamped name
       const result = await hubBlob().put(timestampedName, fullSizeImageBuffer, {
