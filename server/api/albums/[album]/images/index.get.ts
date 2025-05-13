@@ -1,4 +1,5 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, desc, gt, sql } from 'drizzle-orm'
+import { tables, useDrizzle } from '../../../../utils/drizzle'
 
 export default defineEventHandler(async (event) => {
   const albumPathname = event.context.params?.album
@@ -24,30 +25,56 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Get pagination parameters from query
+  const query = getQuery(event)
+  const limit = parseInt(query.limit as string) || 10
+  const page = parseInt(query.page as string) || 1
+  const offset = (page - 1) * limit
+
   // Check access permissions
   // If album is public, allow access
   if (album.isPublic) {
-    // Proceed with fetching images
-    const result = await hubBlob().list({
-      prefix: `albums/${albumPathname}/`,
-      folded: false,
-    })
+    // Get total count of images for pagination
+    const totalCountResult = await useDrizzle()
+      .select({ count: sql<number>`count(*)` })
+      .from(tables.images)
+      .where(eq(tables.images.albumId, album.id))
+      .get()
 
-    return (result.blobs || [])
-      .filter(blob =>
-        !blob.pathname.includes('/previews/')
-        && !blob.pathname.endsWith('.placeholder'),
-      )
-      .map((blob) => {
-        const filename = blob.pathname.split('/').pop() || ''
+    const totalCount = totalCountResult?.count || 0
+    const totalPages = Math.ceil(totalCount / limit)
 
+    // Proceed with fetching images from database with pagination
+    const imagesQuery = useDrizzle()
+      .select()
+      .from(tables.images)
+      .where(eq(tables.images.albumId, album.id))
+      .orderBy(desc(tables.images.uploadedAt))
+      .limit(limit)
+      .offset(offset)
+
+    const dbImages = await imagesQuery.all()
+
+    // Check if there are more pages
+    const hasMore = page < totalPages
+
+    // Map database images to the expected format
+    return {
+      images: dbImages.map((image) => {
+        const filename = image.filename
         return {
-          id: blob.pathname,
-          url: `${blob.pathname}`,
+          id: image.pathname,
+          url: image.pathname,
           previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
-          uploadedAt: blob.uploadedAt,
+          uploadedAt: image.uploadedAt.toISOString(),
+          imageId: image.id,
         }
-      })
+      }),
+      page,
+      totalPages,
+      totalCount,
+      hasMore,
+    }
   }
 
   // For private albums, check user access
@@ -59,27 +86,47 @@ export default defineEventHandler(async (event) => {
 
     // Admins can access all albums
     if (isAdmin) {
-      // Proceed with fetching images
-      const result = await hubBlob().list({
-        prefix: `albums/${albumPathname}/`,
-        folded: false,
-      })
+      // Get total count of images for pagination
+      const totalCountResult = await useDrizzle()
+        .select({ count: sql<number>`count(*)` })
+        .from(tables.images)
+        .where(eq(tables.images.albumId, album.id))
+        .get()
 
-      return (result.blobs || [])
-        .filter(blob =>
-          !blob.pathname.includes('/previews/')
-          && !blob.pathname.endsWith('.placeholder'),
-        )
-        .map((blob) => {
-          const filename = blob.pathname.split('/').pop() || ''
+      const totalCount = totalCountResult?.count || 0
+      const totalPages = Math.ceil(totalCount / limit)
 
+      // Proceed with fetching images from database with pagination
+      const imagesQuery = useDrizzle()
+        .select()
+        .from(tables.images)
+        .where(eq(tables.images.albumId, album.id))
+        .orderBy(desc(tables.images.uploadedAt))
+        .limit(limit)
+        .offset(offset)
+
+      const dbImages = await imagesQuery.all()
+
+      // Check if there are more pages
+      const hasMore = page < totalPages
+
+      // Map database images to the expected format
+      return {
+        images: dbImages.map((image) => {
+          const filename = image.filename
           return {
-            id: blob.pathname,
-            url: `${blob.pathname}`,
+            id: image.pathname,
+            url: image.pathname,
             previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
-            uploadedAt: blob.uploadedAt,
+            uploadedAt: image.uploadedAt.toISOString(),
+            imageId: image.id,
           }
-        })
+        }),
+        page,
+        totalPages,
+        totalCount,
+        hasMore,
+      }
     }
 
     // If not admin, check if user has access to this album
@@ -96,27 +143,47 @@ export default defineEventHandler(async (event) => {
         .get()
 
       if (userAccess) {
-        // User has access, proceed with fetching images
-        const result = await hubBlob().list({
-          prefix: `albums/${albumPathname}/`,
-          folded: false,
-        })
+        // Get total count of images for pagination
+        const totalCountResult = await useDrizzle()
+          .select({ count: sql<number>`count(*)` })
+          .from(tables.images)
+          .where(eq(tables.images.albumId, album.id))
+          .get()
 
-        return (result.blobs || [])
-          .filter(blob =>
-            !blob.pathname.includes('/previews/')
-            && !blob.pathname.endsWith('.placeholder'),
-          )
-          .map((blob) => {
-            const filename = blob.pathname.split('/').pop() || ''
+        const totalCount = totalCountResult?.count || 0
+        const totalPages = Math.ceil(totalCount / limit)
 
+        // User has access, proceed with fetching images from database with pagination
+        const imagesQuery = useDrizzle()
+          .select()
+          .from(tables.images)
+          .where(eq(tables.images.albumId, album.id))
+          .orderBy(desc(tables.images.uploadedAt))
+          .limit(limit)
+          .offset(offset)
+
+        const dbImages = await imagesQuery.all()
+
+        // Check if there are more pages
+        const hasMore = page < totalPages
+
+        // Map database images to the expected format
+        return {
+          images: dbImages.map((image) => {
+            const filename = image.filename
             return {
-              id: blob.pathname,
-              url: blob.pathname,
+              id: image.pathname,
+              url: image.pathname,
               previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
-              uploadedAt: blob.uploadedAt,
+              uploadedAt: image.uploadedAt.toISOString(),
+              imageId: image.id,
             }
-          })
+          }),
+          page,
+          totalPages,
+          totalCount,
+          hasMore,
+        }
       }
     }
 
@@ -126,7 +193,7 @@ export default defineEventHandler(async (event) => {
       message: 'You do not have permission to access this album',
     })
   }
-  catch (error) {
+  catch (error: any) {
     // If there's an error getting the session or the user is not authenticated
     if (error.statusCode === 401 || !error.statusCode) {
       throw createError({

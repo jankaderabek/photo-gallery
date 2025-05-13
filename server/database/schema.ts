@@ -29,3 +29,13 @@ export const albumAccess = sqliteTable('album_access', {
   userId: integer('user_id').notNull().references(() => users.id),
   dateGranted: integer('date_granted', { mode: 'timestamp' }).notNull(),
 })
+
+// Table to store image information
+export const images = sqliteTable('images', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  albumId: integer('album_id').notNull().references(() => albums.id),
+  pathname: text('pathname').notNull().unique(),
+  filename: text('filename').notNull(),
+  originalFilename: text('original_filename').notNull(),
+  uploadedAt: integer('uploaded_at', { mode: 'timestamp' }).notNull(),
+})

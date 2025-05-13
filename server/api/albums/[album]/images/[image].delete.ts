@@ -37,8 +37,16 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Delete the main image
-    await hubBlob().delete(decodeURIComponent(imagePath))
+    const decodedImagePath = decodeURIComponent(imagePath)
+
+    // Delete the image record from the database
+    await useDrizzle()
+      .delete(tables.images)
+      .where(eq(tables.images.pathname, decodedImagePath))
+      .run()
+
+    // Delete the main image from blob storage
+    await hubBlob().delete(decodedImagePath)
 
     // Also delete the preview image if it exists
     const filename = imagePath.split('/').pop() || ''

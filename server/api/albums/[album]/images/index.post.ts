@@ -1,3 +1,6 @@
+import { eq } from 'drizzle-orm'
+import { tables, useDrizzle } from '../../../../utils/drizzle'
+
 export default defineEventHandler(async (event) => {
   const albumPathname = event.context.params?.album
 
@@ -92,12 +95,27 @@ export default defineEventHandler(async (event) => {
         contentType: imageType,
       })
 
+      // Store image information in the database
+      const imagePath = `${imagesPrefix}/${timestampedName}`
+      const imageRecord = await useDrizzle()
+        .insert(tables.images)
+        .values({
+          albumId: album.id,
+          pathname: imagePath,
+          filename: timestampedName,
+          originalFilename: originalName,
+          uploadedAt: now,
+        })
+        .returning()
+        .get()
+
       results.push({
         filename: originalName,
         timestampedName: timestampedName,
         success: true,
-        path: `${imagesPrefix}/${timestampedName}`,
+        path: imagePath,
         result,
+        imageId: imageRecord.id,
       })
     }
     catch (error) {

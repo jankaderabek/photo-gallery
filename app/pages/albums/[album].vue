@@ -14,10 +14,84 @@ const displayName = computed(() => {
 // Check if we have access to this album
 const hasAccess = computed(() => !!album.value && !albumError.value)
 
-// Fetch images for this album only if we have access
-const { data: images, refresh: refreshImages, error: _imagesError } = await useFetch(
-  () => hasAccess.value ? `/api/albums/${albumId}/images` : null,
-)
+// Define image type
+interface ImageItem {
+  id: string
+  url: string
+  previewUrl: string
+  uploadedAt: string
+  imageId?: number
+}
+
+interface ImagesResponse {
+  images: ImageItem[]
+  page: number
+  totalPages: number
+  totalCount: number
+  hasMore: boolean
+}
+
+// State for images and pagination
+const allImages = ref<ImageItem[]>([])
+const isLoading = ref(false)
+const currentPage = ref(1)
+const totalPages = ref(1)
+const totalCount = ref(0)
+const hasMore = ref(true)
+const pageSize = 10
+
+// Function to load images
+async function loadImages(reset = false) {
+  if (isLoading.value || (!hasMore.value && !reset)) return
+
+  isLoading.value = true
+
+  if (reset) {
+    allImages.value = []
+    currentPage.value = 1
+    hasMore.value = true
+  }
+
+  try {
+    // Only fetch if we have access to the album
+    if (hasAccess.value) {
+      // Build the URL with pagination parameters
+      const url = `/api/albums/${albumId}/images?limit=${pageSize}&page=${currentPage.value}`
+
+      const response = await $fetch<ImagesResponse>(url)
+
+      if (reset) {
+        // Replace images array
+        allImages.value = response.images
+      } else {
+        // Add new images to the array
+        allImages.value = [...allImages.value, ...response.images]
+      }
+
+      // Update pagination state
+      totalPages.value = response.totalPages
+      totalCount.value = response.totalCount
+      hasMore.value = response.hasMore
+
+      // Increment page for next load
+      if (hasMore.value) {
+        currentPage.value++
+      }
+    }
+  } catch (error) {
+    console.error('Error loading images:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Initial load of images
+await loadImages()
+
+// Function to refresh images
+async function refreshImages() {
+  await loadImages(true)
+}
 
 // Gallery state
 const isGalleryOpen = ref(false)
@@ -42,12 +116,12 @@ const links = computed(() => {
       label: 'Upload to this album',
       to: `/upload?album=${albumId}`,
       icon: 'i-heroicons-arrow-up-tray',
-      color: 'primary' as const,
+      color: 'primary',
     },
     {
       label: 'Delete album',
       icon: 'i-heroicons-trash',
-      color: 'red' as const,
+      color: 'error',
       onClick: () => showDeleteAlbumConfirm.value = true,
     },
   ]
@@ -111,7 +185,7 @@ async function deleteAlbum() {
         <template v-if="!hasAccess">
           <UAlert
             icon="i-heroicons-lock-closed"
-            color="orange"
+            color="warning"
             title="Access Denied"
             description="You don't have permission to view this private album."
             class="mb-4"
@@ -119,7 +193,7 @@ async function deleteAlbum() {
             <template #actions>
               <UButton
                 to="/albums"
-                color="gray"
+                color="neutral"
               >
                 Back to Albums
               </UButton>
@@ -137,7 +211,7 @@ async function deleteAlbum() {
         <!-- Album content when access is granted -->
         <template v-else>
           <UAlert
-            v-if="!images || images.length === 0"
+            v-if="!allImages || allImages.length === 0"
             icon="i-heroicons-photo"
             title="No images in this album"
             description="Upload your first image to get started."
@@ -159,7 +233,7 @@ async function deleteAlbum() {
             class="grid lg:grid-cols-[repeat(auto-fill,minmax(500px,1fr))] gap-2 items-center"
           >
             <NuxtImg
-              v-for="(image, index) in images"
+              v-for="(image, index) in allImages"
               :key="image.id"
               :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
               :src="image.url"
@@ -171,13 +245,24 @@ async function deleteAlbum() {
               loading="lazy"
               @click="openGallery(index)"
             />
+
+            <!-- Load more button -->
+            <div v-if="hasMore" class="col-span-full flex justify-center my-4">
+              <UButton
+                :loading="isLoading"
+                :disabled="isLoading"
+                @click="() => loadImages()"
+              >
+                Load More Images
+              </UButton>
+            </div>
           </div>
         </template>
 
         <!-- Image Gallery Modal -->
         <ImageGallery
-          v-if="hasAccess && images && images.length > 0"
-          :images="images"
+          v-if="hasAccess && allImages && allImages.length > 0"
+          :images="allImages"
           :initial-index="selectedImageIndex"
           :open="isGalleryOpen"
           :album-id="albumId"
@@ -208,7 +293,7 @@ async function deleteAlbum() {
 
           <UAlert
             v-if="deleteAlbumError"
-            color="red"
+            color="error"
             variant="soft"
             class="mt-4"
           >
@@ -220,14 +305,14 @@ async function deleteAlbum() {
       <template #footer>
         <div class="flex gap-2">
           <UButton
-            color="gray"
+            color="neutral"
             variant="soft"
             :disabled="isDeletingAlbum"
             label="Cancel"
             @click="showDeleteAlbumConfirm = false"
           />
           <UButton
-            color="red"
+            color="error"
             :loading="isDeletingAlbum"
             :disabled="isDeletingAlbum"
             label="Delete Album"
