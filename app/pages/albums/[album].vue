@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const albumId = route.params.album as string
+const img = useImage()
 
 // Fetch album details
 const { data: album, error: albumError } = await useFetch(`/api/albums/${albumId}`)
@@ -160,7 +161,7 @@ async function deleteAlbum() {
             <NuxtImg
               v-for="(image, index) in images"
               :key="image.id"
-              placeholder
+              :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
               :src="image.url"
               :alt="image.id"
               class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32"

@@ -19,6 +19,8 @@ const emit = defineEmits(['update:open', 'image-deleted'])
 const { user } = useUserSession()
 const isAdmin = computed(() => user.value?.role === 'admin')
 
+const img = useImage()
+
 // Delete confirmation
 const showDeleteConfirm = ref(false)
 const isDeleting = ref(false)
@@ -27,36 +29,21 @@ const deleteError = ref('')
 // Current image index
 const currentIndex = ref(props.initialIndex || 0)
 
-// Loading state
-const isLoading = ref(false)
-
 // Computed properties for navigation
 const currentImage = computed(() => props.images[currentIndex.value])
 const hasNext = computed(() => currentIndex.value < props.images.length - 1)
 const hasPrevious = computed(() => currentIndex.value > 0)
 const imageCount = computed(() => props.images.length)
 
-// Image loading handler
-function handleImageLoad() {
-  isLoading.value = false
-}
-
-function handleImageError() {
-  isLoading.value = false
-  // Could add error handling here
-}
-
 // Navigation methods
 function next() {
   if (hasNext.value) {
-    isLoading.value = true
     currentIndex.value++
   }
 }
 
 function previous() {
   if (hasPrevious.value) {
-    isLoading.value = true
     currentIndex.value--
   }
 }
@@ -105,18 +92,13 @@ async function deleteCurrentImage() {
 // Watch for initialIndex changes
 watch(() => props.initialIndex, (newIndex) => {
   if (newIndex !== undefined) {
-    isLoading.value = true
     currentIndex.value = newIndex
   }
 })
 
 // Watch for open changes to reset index if closed
 watch(() => props.open, (isOpen) => {
-  if (isOpen) {
-    // Set loading state when opened
-    isLoading.value = true
-  }
-  else {
+  if (!isOpen) {
     // Reset to initial index when closed
     currentIndex.value = props.initialIndex || 0
   }
@@ -227,27 +209,14 @@ defineShortcuts({
 
         <!-- Main image -->
         <div class="w-full h-full flex items-center justify-center p-4 relative">
-          <!-- Loading indicator -->
-          <div
-            v-if="isLoading"
-            class="absolute inset-0 flex items-center justify-center z-10"
-          >
-            <USkeleton class="h-64 w-64 rounded-md" />
-          </div>
-
-          <Transition
-            name="fade"
-            mode="out-in"
-          >
-            <NuxtImg
-              :src="currentImage.url"
-              :alt="currentImage.id.split('/').pop()"
-              class="max-h-full max-w-full object-contain"
-              sizes="100vw sm:50vw md:400px"
-              @load="handleImageLoad"
-              @error="handleImageError"
-            />
-          </Transition>
+          <NuxtImg
+            :key="currentImage.id"
+            :src="currentImage.url"
+            :alt="currentImage.id.split('/').pop()"
+            class="max-h-full max-w-full w-full h-auto object-contain"
+            format="auto"
+            :placeholder="img(currentImage.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
+          />
         </div>
 
         <!-- Navigation buttons -->
