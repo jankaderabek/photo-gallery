@@ -212,56 +212,58 @@ async function deleteAlbum() {
 
         <!-- Album content when access is granted -->
         <template v-else>
-          <UAlert
-            v-if="!allImages || allImages.length === 0"
-            icon="i-heroicons-photo"
-            title="No images in this album"
-            description="Upload your first image to get started."
-            class="mb-4"
-          >
-            <template #actions>
-              <UButton
-                v-if="isAdmin"
-                :to="`/upload?album=${albumId}`"
-                color="primary"
-              >
-                Upload to this album
-              </UButton>
-            </template>
-          </UAlert>
-
-          <div
-            v-else
-            class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-2 items-center"
-          >
-            <NuxtImg
-              v-for="image in allImages"
-              :key="image.id"
-              :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
-              :src="image.url"
-              :alt="image.id"
-              class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32 max-w-4xl"
-              sizes="640px sm:1200px"
-              format="auto"
-              quality="90"
-              loading="lazy"
-              @click="openImageModal(image)"
-            />
-
-            <!-- Load more button -->
-            <div
-              v-if="hasMore"
-              class="col-span-full flex justify-center my-4"
+          <ClientOnly>
+            <UAlert
+              v-if="!allImages || allImages.length === 0"
+              icon="i-heroicons-photo"
+              title="No images in this album"
+              description="Upload your first image to get started."
+              class="mb-4"
             >
-              <UButton
-                :loading="isLoading"
-                :disabled="isLoading"
-                @click="() => loadImages()"
+              <template #actions>
+                <UButton
+                  v-if="isAdmin"
+                  :to="`/upload?album=${albumId}`"
+                  color="primary"
+                >
+                  Upload to this album
+                </UButton>
+              </template>
+            </UAlert>
+
+            <div
+              v-else
+              class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-2 items-center"
+            >
+              <NuxtImg
+                v-for="image in allImages"
+                :key="image.id"
+                :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
+                :src="image.url"
+                :alt="image.id"
+                class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32 max-w-4xl"
+                sizes="640px sm:1200px"
+                format="auto"
+                quality="90"
+                loading="lazy"
+                @click="openImageModal(image)"
+              />
+
+              <!-- Load more button -->
+              <div
+                v-if="hasMore"
+                class="col-span-full flex justify-center my-4"
               >
-                Load More Images
-              </UButton>
+                <UButton
+                  :loading="isLoading"
+                  :disabled="isLoading"
+                  @click="() => loadImages()"
+                >
+                  Load More Images
+                </UButton>
+              </div>
             </div>
-          </div>
+          </ClientOnly>
         </template>
 
         <!-- Delete Album Confirmation Modal -->
