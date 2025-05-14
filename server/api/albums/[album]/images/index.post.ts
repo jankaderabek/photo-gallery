@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
 
   const form = await readFormData(event)
   const imagesPrefix = `albums/${albumPathname.replace('/', '')}`
-  const previewsPrefix = `${imagesPrefix}/previews`
   const files = form.getAll('files') as File[]
 
   if (files.length === 0) {

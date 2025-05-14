@@ -208,9 +208,13 @@ defineShortcuts({
         </UModal>
 
         <!-- Main image -->
-        <div class="w-full h-full flex items-center justify-center p-4 relative">
+        <div
+          :key="currentImage.id"
+          class="w-full h-full flex items-center justify-center p-4 relative"
+        >
           <NuxtImg
-            :key="currentImage.id"
+            densities="x1"
+            sizes="500px lg:100vw"
             :src="currentImage.url"
             :alt="currentImage.id.split('/').pop()"
             class="max-h-full max-w-full w-full h-auto object-contain"

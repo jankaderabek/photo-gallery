@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
+
 const { loggedIn, user, clear: logout } = useUserSession()
 
 async function handleLogout() {
@@ -6,6 +8,51 @@ async function handleLogout() {
   await logout()
   navigateTo('/auth/login')
 }
+
+// Get current route for active state detection
+const route = useRoute()
+
+// Define navigation menu items
+const menuItems = computed<NavigationMenuItem[]>(() => {
+  const items: NavigationMenuItem[] = [
+    {
+      label: 'Albums',
+      to: '/albums',
+      active: route.path === '/albums' || route.path.startsWith('/albums/'),
+    },
+  ]
+
+  // Add admin-only items
+  if (user.value?.role === 'admin') {
+    items.push({
+      label: 'Upload',
+      to: '/upload',
+      active: route.path === '/upload',
+    })
+
+    items.push({
+      label: 'Admin',
+      trailingIcon: 'i-heroicons-chevron-down',
+      active: route.path.startsWith('/admin/'),
+      children: [
+        {
+          label: 'Users',
+          icon: 'i-heroicons-user-group',
+          to: '/admin/users',
+          active: route.path === '/admin/users',
+        },
+        {
+          label: 'Albums',
+          icon: 'i-heroicons-photo-stack',
+          to: '/admin/albums',
+          active: route.path === '/admin/albums',
+        },
+      ],
+    })
+  }
+
+  return items
+})
 </script>
 
 <template>
@@ -18,85 +65,46 @@ async function handleLogout() {
             class="font-bold text-xl"
           >Photo Gallery</NuxtLink>
         </template>
-        <template #right>
-          <UButton
-            to="/albums"
-            variant="ghost"
-            color="neutral"
-          >
-            Albums
-          </UButton>
-          <UButton
-            v-if="user?.role === 'admin'"
-            to="/upload"
-            variant="ghost"
-            color="neutral"
-          >
-            Upload
-          </UButton>
 
+        <UNavigationMenu
+          :items="menuItems"
+          color="neutral"
+          variant="pill"
+          highlight
+        />
+
+        <template #body>
+          <UNavigationMenu
+            :items="menuItems"
+            orientation="vertical"
+            class="-mx-2.5"
+          />
+        </template>
+
+        <template #right>
           <!-- Auth buttons -->
           <template v-if="loggedIn">
-            <!-- Admin dropdown -->
-            <UPopover v-if="user?.role === 'admin'">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                trailing-icon="i-heroicons-chevron-down"
-              >
-                Admin
-              </UButton>
-
-              <template #content>
-                <div class="p-2 w-48">
-                  <UButton
-                    block
-                    to="/admin/users"
-                    color="neutral"
-                    variant="ghost"
-                    icon="i-heroicons-user-group"
-                    class="mb-1"
-                  >
-                    Users
-                  </UButton>
-                  <UButton
-                    block
-                    to="/admin/albums"
-                    color="neutral"
-                    variant="ghost"
-                    icon="i-heroicons-photo-stack"
-                  >
-                    Albums
-                  </UButton>
-                </div>
-              </template>
-            </UPopover>
-
-            <!-- User menu -->
             <UPopover>
-              <UButton
-                color="neutral"
-                variant="ghost"
-                trailing-icon="i-heroicons-chevron-down"
-              >
-                {{ user?.email }}
-              </UButton>
+              <UUser
+                :avatar="{
+                  icon: 'i-heroicons-user-circle',
+                }"
+              />
 
               <template #content>
-                <div class="p-2 w-64">
-                  <div class="p-2 mb-2 border-b">
-                    <div class="flex items-center gap-2 mt-1">
-                      <UIcon
-                        name="i-heroicons-envelope"
-                        class="text-gray-500"
-                      />
-                      <span class="text-sm text-gray-500">{{ user?.email }}</span>
-                    </div>
+                <div class="p-2 w-64 divide-gray-100 flex flex-col gap-2">
+                  <div class="flex items-center gap-2 justify-center p-2">
+                    <UIcon
+                      name="i-heroicons-envelope"
+                      class="text-gray-500"
+                    />
+                    <span class="text-sm text-gray-500">{{ user?.email }}</span>
                   </div>
+
                   <UButton
                     block
                     color="neutral"
-                    variant="ghost"
+                    variant="soft"
                     icon="i-heroicons-arrow-right-on-rectangle"
                     @click="handleLogout"
                   >

@@ -63,7 +63,8 @@ async function loadImages(reset = false) {
       if (reset) {
         // Replace images array
         allImages.value = response.images
-      } else {
+      }
+      else {
         // Add new images to the array
         allImages.value = [...allImages.value, ...response.images]
       }
@@ -78,9 +79,11 @@ async function loadImages(reset = false) {
         currentPage.value++
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error loading images:', error)
-  } finally {
+  }
+  finally {
     isLoading.value = false
   }
 }
@@ -88,20 +91,24 @@ async function loadImages(reset = false) {
 // Initial load of images
 await loadImages()
 
-// Function to refresh images
-async function refreshImages() {
-  await loadImages(true)
+// Image modal state
+const isImageModalOpen = ref(false)
+const selectedImage = ref<ImageItem | null>(null)
+
+// Open image modal with selected image
+function openImageModal(image: ImageItem) {
+  selectedImage.value = image
+  isImageModalOpen.value = true
 }
 
-// Gallery state
-const isGalleryOpen = ref(false)
-const selectedImageIndex = ref(0)
-
-// Open gallery with selected image
-function openGallery(index: number) {
-  selectedImageIndex.value = index
-  isGalleryOpen.value = true
-}
+// Define keyboard shortcuts for the modal
+defineShortcuts({
+  escape: {
+    handler: () => {
+      isImageModalOpen.value = false
+    },
+  },
+})
 
 // Get user session to check role
 const { user } = useUserSession()
@@ -131,11 +138,6 @@ const links = computed(() => {
 const showDeleteAlbumConfirm = ref(false)
 const isDeletingAlbum = ref(false)
 const deleteAlbumError = ref('')
-
-// Handle image deletion
-async function handleImageDeleted() {
-  await refreshImages()
-}
 
 // Delete album and all its images
 async function deleteAlbum() {
@@ -230,24 +232,27 @@ async function deleteAlbum() {
 
           <div
             v-else
-            class="grid lg:grid-cols-[repeat(auto-fill,minmax(500px,1fr))] gap-2 items-center"
+            class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-2 items-center"
           >
             <NuxtImg
-              v-for="(image, index) in allImages"
+              v-for="image in allImages"
               :key="image.id"
               :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
               :src="image.url"
               :alt="image.id"
-              class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32"
-              sizes="100vw md:800px"
+              class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32 max-w-4xl"
+              sizes="640px sm:1200px"
               format="auto"
               quality="90"
               loading="lazy"
-              @click="openGallery(index)"
+              @click="openImageModal(image)"
             />
 
             <!-- Load more button -->
-            <div v-if="hasMore" class="col-span-full flex justify-center my-4">
+            <div
+              v-if="hasMore"
+              class="col-span-full flex justify-center my-4"
+            >
               <UButton
                 :loading="isLoading"
                 :disabled="isLoading"
@@ -259,16 +264,6 @@ async function deleteAlbum() {
           </div>
         </template>
 
-        <!-- Image Gallery Modal -->
-        <ImageGallery
-          v-if="hasAccess && allImages && allImages.length > 0"
-          :images="allImages"
-          :initial-index="selectedImageIndex"
-          :open="isGalleryOpen"
-          :album-id="albumId"
-          @update:open="isGalleryOpen = $event"
-          @image-deleted="handleImageDeleted"
-        />
         <!-- Delete Album Confirmation Modal -->
         <UButton
           v-if="false"
@@ -278,6 +273,49 @@ async function deleteAlbum() {
         />
       </UPageBody>
     </UPage>
+
+    <!-- Simple Image Modal -->
+    <UModal
+      v-model:open="isImageModalOpen"
+      fullscreen
+      :ui="{
+        wrapper: 'flex flex-col',
+        body: 'flex-1 flex items-center justify-center p-0 relative bg-gray-900',
+      }"
+      :close="false"
+    >
+      <template #body>
+        <div
+          v-if="selectedImage"
+          class="w-full h-full flex flex-col items-center justify-center relative"
+        >
+          <!-- Close button -->
+          <div class="absolute top-4 right-4 z-10">
+            <UButton
+              aria-label="Close image"
+              icon="i-heroicons-x-mark"
+              variant="ghost"
+              size="xl"
+              class="cursor-pointer"
+              @click="isImageModalOpen = false"
+            />
+          </div>
+
+          <!-- Main image -->
+          <div class="w-full h-full flex items-center justify-center relative">
+            <NuxtImg
+              v-if="selectedImage"
+              :key="selectedImage.id"
+              :src="selectedImage.url"
+              :alt="selectedImage.id.split('/').pop()"
+              class="max-h-full max-w-full w-full h-auto object-contain"
+              format="auto"
+              :placeholder="img(selectedImage.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
 
     <UModal
       v-model:open="showDeleteAlbumConfirm"

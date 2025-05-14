@@ -1,4 +1,4 @@
-import { and, eq, desc, gt, sql } from 'drizzle-orm'
+import { and, eq, desc, sql } from 'drizzle-orm'
 import { tables, useDrizzle } from '../../../../utils/drizzle'
 
 export default defineEventHandler(async (event) => {
