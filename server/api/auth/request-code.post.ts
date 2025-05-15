@@ -9,6 +9,8 @@ const requestCodeSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  // Rate limiting is configured in nuxt.config.ts
+  // If rate limit is exceeded, Nuxt Security will automatically return a 429 response
   // Validate the request body
   const { email } = await readValidatedBody(event, requestCodeSchema.parse)
 
