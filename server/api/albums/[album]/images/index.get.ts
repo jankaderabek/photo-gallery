@@ -69,6 +69,8 @@ export default defineEventHandler(async (event) => {
           previewUrl: `/images/albums/${albumPathname}/previews/${filename}`,
           uploadedAt: image.uploadedAt.toISOString(),
           imageId: image.id,
+          originalWidth: image.originalWidth,
+          originalHeight: image.originalHeight,
         }
       }),
       page,
@@ -123,6 +125,8 @@ export default defineEventHandler(async (event) => {
             uploadedAt: image.uploadedAt.toISOString(),
             photoCreatedAt: image.photoCreatedAt ? image.photoCreatedAt.toISOString() : null,
             imageId: image.id,
+            originalWidth: image.originalWidth,
+            originalHeight: image.originalHeight,
           }
         }),
         page,
@@ -182,6 +186,8 @@ export default defineEventHandler(async (event) => {
               uploadedAt: image.uploadedAt.toISOString(),
               photoCreatedAt: image.photoCreatedAt ? image.photoCreatedAt.toISOString() : null,
               imageId: image.id,
+              originalWidth: image.originalWidth,
+              originalHeight: image.originalHeight,
             }
           }),
           page,

@@ -199,8 +199,24 @@ async function onFileSelect({ target }: Event) {
         throw new Error(`${file.name} is not an image file`)
       }
 
+      let fileToUpload: Blob | File = file
+
+      // Always try to resize the image if needed
+      try {
+        fileToUpload = await resizeImage(file)
+
+        // Only show processing message if the file was actually resized
+        if (fileToUpload !== file) {
+          processingStatus.value = `Processed ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB → ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB)`
+        }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      catch (_) {
+        processingStatus.value = `Could not resize ${file.name}, uploading original`
+      }
+
       // Add the file to the form data with the original filename
-      formData.append(`files`, file, file.name)
+      formData.append(`files`, fileToUpload, file.name)
     }
 
     // Update status

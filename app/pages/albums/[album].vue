@@ -21,6 +21,8 @@ interface ImageItem {
   previewUrl: string
   uploadedAt: string
   imageId?: number
+  originalWidth: number | null
+  originalHeight: number | null
 }
 
 interface ImagesResponse {
@@ -241,11 +243,16 @@ async function deleteAlbum() {
                 :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
                 :src="image.url"
                 :alt="image.id"
-                class="w-full h-auto object-contain cursor-pointer hover:shadow-lg transition-shadow min-w-40 min-h-32 max-w-4xl"
+                class="w-full h-full object-contain cursor-pointer hover:shadow-lg transition-shadow max-w-4xl"
+                :style="{
+                  aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
+                }"
                 sizes="640px sm:1200px"
                 format="auto"
                 quality="90"
                 loading="lazy"
+                :width="image.originalWidth || undefined"
+                :height="image.originalHeight || undefined"
                 @click="openImageModal(image)"
               />
 
@@ -311,7 +318,12 @@ async function deleteAlbum() {
               :src="selectedImage.url"
               :alt="selectedImage.id.split('/').pop()"
               class="max-h-full max-w-full w-full h-auto object-contain"
+              :style="{
+                aspectRatio: selectedImage.originalWidth && selectedImage.originalHeight ? `${selectedImage.originalWidth} / ${selectedImage.originalHeight}` : 'auto',
+              }"
               format="auto"
+              :width="selectedImage.originalWidth || undefined"
+              :height="selectedImage.originalHeight || undefined"
               :placeholder="img(selectedImage.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
             />
           </div>

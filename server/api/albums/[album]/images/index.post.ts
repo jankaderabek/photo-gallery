@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import exifr from 'exifr'
+import sizeOf from 'image-size'
 import { tables, useDrizzle } from '../../../../utils/drizzle'
 
 export default defineEventHandler(async (event) => {
@@ -47,20 +48,51 @@ export default defineEventHandler(async (event) => {
       const arrayBuffer = await file.arrayBuffer()
       const imageType = 'image/webp'
 
-      // Extract EXIF data to get photo creation date
+      // Extract EXIF data to get photo creation date and image dimensions
       let photoCreatedAt = null
-      try {
-        // Only parse the specific EXIF tags we need for better performance
-        const exifData = await exifr.parse(new Uint8Array(arrayBuffer), ['DateTimeOriginal', 'CreateDate'])
+      let originalWidth = null
+      let originalHeight = null
 
-        if (exifData && (exifData.DateTimeOriginal || exifData.CreateDate)) {
-          // Use DateTimeOriginal or CreateDate as fallback
-          photoCreatedAt = exifData.DateTimeOriginal || exifData.CreateDate
+      try {
+        // Parse EXIF data for date and dimensions
+        const exifData = await exifr.parse(new Uint8Array(arrayBuffer), {
+          // Only parse the specific EXIF tags we need for better performance
+          pick: ['DateTimeOriginal', 'CreateDate', 'ExifImageWidth', 'ExifImageHeight', 'PixelXDimension', 'PixelYDimension']
+        })
+
+        if (exifData) {
+          // Extract photo creation date
+          if (exifData.DateTimeOriginal || exifData.CreateDate) {
+            photoCreatedAt = exifData.DateTimeOriginal || exifData.CreateDate
+          }
+
+          // Extract image dimensions
+          // Try different EXIF tags that might contain dimensions
+          if (exifData.ExifImageWidth && exifData.ExifImageHeight) {
+            originalWidth = exifData.ExifImageWidth
+            originalHeight = exifData.ExifImageHeight
+          } else if (exifData.PixelXDimension && exifData.PixelYDimension) {
+            originalWidth = exifData.PixelXDimension
+            originalHeight = exifData.PixelYDimension
+          }
         }
       }
       catch (exifError) {
         console.warn(`Could not extract EXIF data from ${file.name}:`, exifError)
         // Continue without EXIF data
+      }
+
+      // If we couldn't get dimensions from EXIF, try to get them from the image data
+      if (!originalWidth || !originalHeight) {
+        try {
+          // Use image-size library to get dimensions from buffer
+          const dimensions = sizeOf(Buffer.from(arrayBuffer))
+          originalWidth = dimensions.width
+          originalHeight = dimensions.height
+        } catch (dimensionError) {
+          console.warn(`Could not extract image dimensions from ${file.name}:`, dimensionError)
+          // Continue without dimensions
+        }
       }
 
       // Generate timestamp prefix for sorting (YYYYMMDD_HHMMSS_)
@@ -105,6 +137,8 @@ export default defineEventHandler(async (event) => {
           originalFilename: originalName,
           uploadedAt: now,
           photoCreatedAt: photoCreatedAt ? new Date(photoCreatedAt) : null,
+          originalWidth: originalWidth,
+          originalHeight: originalHeight,
         })
         .returning()
         .get()
@@ -117,6 +151,8 @@ export default defineEventHandler(async (event) => {
         result,
         imageId: imageRecord.id,
         photoCreatedAt: imageRecord.photoCreatedAt ? imageRecord.photoCreatedAt.toISOString() : null,
+        originalWidth: imageRecord.originalWidth,
+        originalHeight: imageRecord.originalHeight,
       })
     }
     catch (error) {

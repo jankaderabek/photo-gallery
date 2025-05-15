@@ -4,6 +4,8 @@ interface Image {
   url: string
   previewUrl: string
   uploadedAt: string
+  originalWidth?: number | null
+  originalHeight?: number | null
 }
 
 const props = defineProps<{
@@ -218,7 +220,12 @@ defineShortcuts({
             :src="currentImage.url"
             :alt="currentImage.id.split('/').pop()"
             class="max-h-full max-w-full w-full h-auto object-contain"
+            :style="{
+              aspectRatio: currentImage.originalWidth && currentImage.originalHeight ? `${currentImage.originalWidth} / ${currentImage.originalHeight}` : 'auto'
+            }"
             format="auto"
+            :width="currentImage.originalWidth || undefined"
+            :height="currentImage.originalHeight || undefined"
             :placeholder="img(currentImage.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
           />
         </div>

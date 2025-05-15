@@ -39,4 +39,6 @@ export const images = sqliteTable('images', {
   originalFilename: text('original_filename').notNull(),
   uploadedAt: integer('uploaded_at', { mode: 'timestamp' }).notNull(),
   photoCreatedAt: integer('photo_created_at', { mode: 'timestamp' }),
+  originalWidth: integer('original_width'),
+  originalHeight: integer('original_height'),
 })
