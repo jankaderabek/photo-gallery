@@ -243,6 +243,7 @@ async function deleteAlbum() {
               >
                 <NuxtImg
 
+                  v-slot="{ src, isLoaded, imgAttrs }"
                   :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
                   :src="image.url"
                   :alt="image.id"
@@ -257,7 +258,11 @@ async function deleteAlbum() {
                   :width="image.originalWidth || undefined"
                   :height="image.originalHeight || undefined"
                   @click="openImageModal(image)"
-                />
+                >
+                  <div v-if="!isLoaded">
+                    fsf
+                  </div>
+                </NuxtImg>
               </div>
 
               <!-- Load more button -->

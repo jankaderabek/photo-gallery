@@ -42,17 +42,17 @@ export default defineNuxtConfig({
       defaultFrom: 'Photo Gallery <info@gallery.jankaderabek.eu>',
     },
   },
-  routeRules: {
-    '/api/auth/request-code': {
-      security: {
-        rateLimiter: {
-          // Allow 5 requests per 15 minutes
-          interval: 60 * 1000, // 15 minutes in milliseconds
-          tokensPerInterval: 1,
-        },
-      },
-    },
-  },
+  // routeRules: {
+  //   '/api/auth/request-code': {
+  //     security: {
+  //       rateLimiter: {
+  //         // Allow 5 requests per 15 minutes
+  //         interval: 60 * 1000, // 15 minutes in milliseconds
+  //         tokensPerInterval: 1,
+  //       },
+  //     },
+  //   },
+  // },
   future: {
     compatibilityVersion: 4,
   },
@@ -85,14 +85,14 @@ export default defineNuxtConfig({
       },
     },
   },
-  security: {
-    rateLimiter: {
-      driver: {
-        name: 'cloudflareKVBinding',
-        options: {
-          binding: 'CACHE',
-        },
-      },
-    },
-  },
+  // security: {
+  //   rateLimiter: {
+  //     driver: {
+  //       name: 'cloudflareKVBinding',
+  //       options: {
+  //         binding: 'CACHE',
+  //       },
+  //     },
+  //   },
+  // },
 })
