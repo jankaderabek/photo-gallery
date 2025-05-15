@@ -246,7 +246,7 @@ async function deleteAlbum() {
                   :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
                   :src="image.url"
                   :alt="image.id"
-                  class="w-full h-full object-contain  cursor-pointer transition-shadow max-w-4xl"
+                  class="w-full h-full object-contain max-h-svh cursor-pointer transition-shadow max-w-4xl"
                   :style="{
                     aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
                   }"

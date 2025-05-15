@@ -58,7 +58,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
 <template>
   <UApp>
     <div class="min-h-screen flex flex-col">
-      <UHeader class="border-b border-gray-200 dark:border-gray-800">
+      <UHeader :ui="{ root: 'static' }">
         <template #left>
           <NuxtLink
             to="/"
