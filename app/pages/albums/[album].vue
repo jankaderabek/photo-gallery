@@ -237,24 +237,28 @@ async function deleteAlbum() {
               v-else
               class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-2 items-center"
             >
-              <NuxtImg
+              <div
                 v-for="image in allImages"
                 :key="image.id"
-                :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
-                :src="image.url"
-                :alt="image.id"
-                class="w-full h-full object-contain cursor-pointer hover:shadow-lg transition-shadow max-w-4xl"
-                :style="{
-                  aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
-                }"
-                sizes="640px sm:1200px"
-                format="auto"
-                quality="90"
-                loading="lazy"
-                :width="image.originalWidth || undefined"
-                :height="image.originalHeight || undefined"
-                @click="openImageModal(image)"
-              />
+              >
+                <NuxtImg
+
+                  :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
+                  :src="image.url"
+                  :alt="image.id"
+                  class="w-full h-full object-contain  cursor-pointer transition-shadow max-w-4xl"
+                  :style="{
+                    aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
+                  }"
+                  sizes="640px sm:1200px"
+                  format="auto"
+                  quality="90"
+                  loading="lazy"
+                  :width="image.originalWidth || undefined"
+                  :height="image.originalHeight || undefined"
+                  @click="openImageModal(image)"
+                />
+              </div>
 
               <!-- Load more button -->
               <div
@@ -277,7 +281,7 @@ async function deleteAlbum() {
         <UButton
           v-if="false"
           label="Delete Album"
-          color="red"
+          color="error"
           @click="showDeleteAlbumConfirm = true"
         />
       </UPageBody>

@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
         // Parse EXIF data for date and dimensions
         const exifData = await exifr.parse(new Uint8Array(arrayBuffer), {
           // Only parse the specific EXIF tags we need for better performance
-          pick: ['DateTimeOriginal', 'CreateDate', 'ExifImageWidth', 'ExifImageHeight', 'PixelXDimension', 'PixelYDimension']
+          pick: ['DateTimeOriginal', 'CreateDate', 'ExifImageWidth', 'ExifImageHeight', 'PixelXDimension', 'PixelYDimension'],
         })
 
         if (exifData) {
@@ -71,7 +71,8 @@ export default defineEventHandler(async (event) => {
           if (exifData.ExifImageWidth && exifData.ExifImageHeight) {
             originalWidth = exifData.ExifImageWidth
             originalHeight = exifData.ExifImageHeight
-          } else if (exifData.PixelXDimension && exifData.PixelYDimension) {
+          }
+          else if (exifData.PixelXDimension && exifData.PixelYDimension) {
             originalWidth = exifData.PixelXDimension
             originalHeight = exifData.PixelYDimension
           }
@@ -89,7 +90,8 @@ export default defineEventHandler(async (event) => {
           const dimensions = sizeOf(Buffer.from(arrayBuffer))
           originalWidth = dimensions.width
           originalHeight = dimensions.height
-        } catch (dimensionError) {
+        }
+        catch (dimensionError) {
           console.warn(`Could not extract image dimensions from ${file.name}:`, dimensionError)
           // Continue without dimensions
         }
@@ -112,7 +114,7 @@ export default defineEventHandler(async (event) => {
         // Process full-size image
         const fullSizeImageResponse = await (
           await env.IMAGES.input(arrayBuffer)
-            .transform({ width: 1920 })
+            .transform({ width: 4096 })
             .output({ format: imageType })
         ).response() as Response
 

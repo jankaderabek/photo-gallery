@@ -22,8 +22,8 @@ interface UploadResult {
 const uploadResults = ref<UploadResult[]>([])
 const uploadError = ref('')
 const processingStatus = ref('')
-const MAX_WIDTH = 2000 // Fixed maximum width for resized images
-const QUALITY = 0.85 // Fixed JPEG/WebP quality
+const MAX_WIDTH = 4096 // Fixed maximum width for resized images
+const QUALITY = 1.0 // Fixed JPEG/WebP quality
 
 // Fetch available albums
 const { data: albums, refresh: refreshAlbums } = await useFetch('/api/albums')
