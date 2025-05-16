@@ -104,15 +104,7 @@ export default defineEventHandler(async (event) => {
     }, {} as Record<string, string>)
   const imagePath = pathname.slice(cloudflareImagesParametersString.length + 1)
 
-  // Check if the image exists
-  const originalImage = await hubBlob().get(imagePath)
-
-  if (!originalImage) {
-    throw createError({
-      statusCode: 404,
-      message: 'Image not found',
-    })
-  }
+  
 
   // Extract album pathname from image path
   // Image path format: albums/{albumPathname}/{filename}
@@ -221,6 +213,16 @@ export default defineEventHandler(async (event) => {
       acc[key] = value
       return acc
     }, {} as Record<string, string>)
+
+// Check if the image exists
+  const originalImage = await hubBlob().get(imagePath)
+
+  if (!originalImage) {
+    throw createError({
+      statusCode: 404,
+      message: 'Image not found',
+    })
+  }
 
   if (env.IMAGES) {
     const imageResponse = await (
