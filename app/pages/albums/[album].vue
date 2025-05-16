@@ -40,7 +40,7 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const totalCount = ref(0)
 const hasMore = ref(true)
-const pageSize = 10
+const pageSize = 6
 
 // Function to load images
 async function loadImages(reset = false) {
@@ -90,6 +90,64 @@ async function loadImages(reset = false) {
   }
 }
 
+// Ref for intersection observer
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+
+// For debouncing the intersection observer callback
+let loadImagesTimeout: NodeJS.Timeout | null = null
+
+// Setup intersection observer for infinite scrolling
+onMounted(() => {
+  // Wait for images to render before initializing the observer
+  setTimeout(() => {
+    // Don't initialize if there are no images or we're still loading the first batch
+    if (allImages.value.length === 0) return
+    // Create intersection observer
+    const observer = new IntersectionObserver((entries) => {
+      // If the load more trigger is visible and we're not already loading
+      if (entries.length > 0 && entries[0]?.isIntersecting && !isLoading.value && hasMore.value) {
+        // Debounce the loadImages call to prevent multiple rapid calls
+        if (loadImagesTimeout) clearTimeout(loadImagesTimeout)
+        loadImagesTimeout = setTimeout(() => {
+          loadImages()
+          loadImagesTimeout = null
+        }, 200)
+      }
+    }, {
+      rootMargin: '50px', // Start loading a bit before the element is visible
+      threshold: 0.1, // Trigger when at least 10% of the element is visible
+    })
+
+    // Watch for the loadMoreTrigger element to be available
+    if (loadMoreTrigger.value) {
+      observer.observe(loadMoreTrigger.value)
+    }
+
+    // Cleanup on component unmount
+    onUnmounted(() => {
+      if (loadMoreTrigger.value) {
+        observer.unobserve(loadMoreTrigger.value)
+      }
+      observer.disconnect()
+
+      // Clear any pending timeout
+      if (loadImagesTimeout) {
+        clearTimeout(loadImagesTimeout)
+        loadImagesTimeout = null
+      }
+    })
+  }, 1000) // 1000ms delay to allow images to render
+})
+
+// Watch for changes in allImages to reinitialize observer
+let observerInitialized = false
+watch(allImages, (newImages) => {
+  // If we have images and observer isn't initialized yet, trigger the initialization
+  if (newImages.length > 0 && !observerInitialized && !isLoading.value) {
+    observerInitialized = true
+  }
+})
+
 // Initial load of images
 await loadImages()
 
@@ -125,13 +183,13 @@ const links = computed(() => {
       label: 'Upload to this album',
       to: `/upload?album=${albumId}`,
       icon: 'i-heroicons-arrow-up-tray',
-      color: 'primary',
+      color: 'primary' as const,
     },
     {
       label: 'Delete album',
       icon: 'i-heroicons-trash',
-      color: 'error',
-      onClick: () => showDeleteAlbumConfirm.value = true,
+      color: 'error' as const,
+      onClick: () => { showDeleteAlbumConfirm.value = true },
     },
   ]
 })
@@ -215,8 +273,25 @@ async function deleteAlbum() {
         <!-- Album content when access is granted -->
         <template v-else>
           <ClientOnly>
+            <!-- Loading state for initial load -->
+            <div
+              v-if="isLoading && allImages.length === 0"
+              class="py-8"
+            >
+              <div class="flex flex-col items-center justify-center space-y-4">
+                <ULoading
+                  size="lg"
+                  class="text-primary"
+                />
+                <p class="text-gray-500">
+                  Loading images...
+                </p>
+              </div>
+            </div>
+
+            <!-- No images message -->
             <UAlert
-              v-if="!allImages || allImages.length === 0"
+              v-else-if="!allImages || allImages.length === 0"
               icon="i-heroicons-photo"
               title="No images in this album"
               description="Upload your first image to get started."
@@ -235,48 +310,71 @@ async function deleteAlbum() {
 
             <div
               v-else
-              class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-2 items-center"
+              class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-4 items-center"
             >
               <div
                 v-for="image in allImages"
                 :key="image.id"
+                class="relative"
               >
-                <NuxtImg
+                <!-- Image placeholder while loading -->
+                <div
+                  v-if="image.originalWidth && image.originalHeight"
+                  class="bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md overflow-hidden min-h-[200px]"
+                  :style="{
+                    aspectRatio: `${image.originalWidth} / ${image.originalHeight}`,
+                    width: '100%',
+                    height: 'auto',
+                  }"
+                />
+                <div
+                  v-else
+                  class="bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md overflow-hidden min-h-[200px]"
+                  style="aspect-ratio: 16/10; width: 100%; height: auto;"
+                />
 
-                  v-slot="{ src, isLoaded, imgAttrs }"
+                <!-- Actual image -->
+                <NuxtImg
                   :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
                   :src="image.url"
                   :alt="image.id"
-                  class="w-full h-full object-contain max-h-svh cursor-pointer transition-shadow max-w-4xl"
+                  class="w-full h-full object-contain max-h-svh cursor-pointer transition-opacity absolute inset-0 max-w-4xl min-w-full"
                   :style="{
                     aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
                   }"
-                  sizes="640px sm:1200px"
+                  sizes="800px sm:1200px"
                   format="auto"
                   quality="90"
                   loading="lazy"
                   :width="image.originalWidth || undefined"
                   :height="image.originalHeight || undefined"
                   @click="openImageModal(image)"
-                >
-                  <div v-if="!isLoaded">
-                    fsf
-                  </div>
-                </NuxtImg>
+                />
               </div>
 
-              <!-- Load more button -->
+              <!-- Infinite scroll trigger element -->
               <div
                 v-if="hasMore"
-                class="col-span-full flex justify-center my-4"
+                ref="loadMoreTrigger"
+                class="col-span-full flex justify-center my-6 h-16"
               >
-                <UButton
-                  :loading="isLoading"
-                  :disabled="isLoading"
-                  @click="() => loadImages()"
-                >
-                  Load More Images
-                </UButton>
+                <ULoading
+                  v-if="isLoading"
+                  size="lg"
+                  class="text-primary"
+                />
+                <span
+                  v-else
+                  class="text-gray-400 text-sm"
+                >Scroll for more images</span>
+              </div>
+
+              <!-- End of content message -->
+              <div
+                v-if="!hasMore && allImages.length > 0"
+                class="col-span-full text-center text-gray-500 my-6"
+              >
+                <p>End of album</p>
               </div>
             </div>
           </ClientOnly>

@@ -8,7 +8,6 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     'nuxt-mcp',
     'nuxt-resend',
-    'nuxt-security',
   ],
   $development: {
     hub: {
@@ -42,17 +41,6 @@ export default defineNuxtConfig({
       defaultFrom: 'Photo Gallery <info@gallery.jankaderabek.eu>',
     },
   },
-  // routeRules: {
-  //   '/api/auth/request-code': {
-  //     security: {
-  //       rateLimiter: {
-  //         // Allow 5 requests per 15 minutes
-  //         interval: 60 * 1000, // 15 minutes in milliseconds
-  //         tokensPerInterval: 1,
-  //       },
-  //     },
-  //   },
-  // },
   future: {
     compatibilityVersion: 4,
   },
@@ -85,14 +73,4 @@ export default defineNuxtConfig({
       },
     },
   },
-  // security: {
-  //   rateLimiter: {
-  //     driver: {
-  //       name: 'cloudflareKVBinding',
-  //       options: {
-  //         binding: 'CACHE',
-  //       },
-  //     },
-  //   },
-  // },
 })
