@@ -335,7 +335,6 @@ async function deleteAlbum() {
 
                 <!-- Actual image -->
                 <NuxtImg
-                  :placeholder="img(image.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
                   :src="image.url"
                   :alt="image.id"
                   class="w-full h-full object-contain max-h-svh cursor-pointer transition-opacity absolute inset-0 max-w-4xl min-w-full"
@@ -431,7 +430,7 @@ async function deleteAlbum() {
               format="auto"
               :width="selectedImage.originalWidth || undefined"
               :height="selectedImage.originalHeight || undefined"
-              :placeholder="img(selectedImage.url, { w: 100, f: 'auto', blur: 2, q: 20 })"
+              sizes="800px md:100vw"
             />
           </div>
         </div>

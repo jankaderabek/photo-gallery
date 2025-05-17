@@ -104,8 +104,6 @@ export default defineEventHandler(async (event) => {
     }, {} as Record<string, string>)
   const imagePath = pathname.slice(cloudflareImagesParametersString.length + 1)
 
-  
-
   // Extract album pathname from image path
   // Image path format: albums/{albumPathname}/{filename}
   const pathParts = imagePath.split('/')
@@ -214,7 +212,7 @@ export default defineEventHandler(async (event) => {
       return acc
     }, {} as Record<string, string>)
 
-// Check if the image exists
+  // Check if the image exists
   const originalImage = await hubBlob().get(imagePath)
 
   if (!originalImage) {
@@ -225,21 +223,44 @@ export default defineEventHandler(async (event) => {
   }
 
   if (env.IMAGES) {
-    const imageResponse = await (
-      await env.IMAGES.input(originalImage)
-        .transform(transformedCloudflareParameters)
-        .output({ format: 'image/webp' })
-    ).response() as Response
+    try {
+      const imageResponse = await (
+        await env.IMAGES.input(originalImage)
+          .transform(transformedCloudflareParameters)
+          .output({ format: 'image/webp' })
+      ).response() as Response
 
-    const imageBuffer = await imageResponse.clone().arrayBuffer()
+      const imageBuffer = await imageResponse.arrayBuffer()
 
-    // store to blob
-    await hubBlob().put(pathname, imageBuffer, {
-      prefix: 'cache',
-      contentType: 'image/webp',
-    })
+      try {
+        // store to blob
+        await hubBlob().put(pathname, imageBuffer, {
+          prefix: 'cache',
+          contentType: 'image/webp',
+        })
 
-    return imageResponse
+        return await hubBlob().get(`cache/${pathname}`)
+      }
+      catch (cacheError: unknown) {
+        console.error('Error caching image:', cacheError)
+        // Continue with the response even if caching fails
+      }
+    }
+    catch (error: unknown) {
+      console.error('Error transforming image:', error)
+
+      if (error instanceof TypeError) {
+        throw createError({
+          statusCode: 400,
+          message: 'Invalid image transformation parameters',
+        })
+      }
+
+      throw createError({
+        statusCode: 500,
+        message: 'Error processing image ' + error,
+      })
+    }
   }
 
   return originalImage
