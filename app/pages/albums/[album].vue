@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AlbumImage from '~/components/AlbumImage.vue'
+import ImageModal from '~/components/ImageModal.vue'
 
 const route = useRoute()
 const albumId = route.params.album as string
@@ -163,14 +164,8 @@ function openImageModal(image: ImageItem) {
   isImageModalOpen.value = true
 }
 
-// Define keyboard shortcuts for the modal
-defineShortcuts({
-  escape: {
-    handler: () => {
-      isImageModalOpen.value = false
-    },
-  },
-})
+// We don't need to define keyboard shortcuts here anymore
+// The ImageModal component handles its own keyboard shortcuts
 
 // Get user session to check role
 const { user } = useUserSession()
@@ -281,9 +276,10 @@ async function deleteAlbum() {
               class="py-8"
             >
               <div class="flex flex-col items-center justify-center space-y-4">
-                <ULoading
+                <UIcon
+                  name="i-lineicons-spinner-arrow"
+                  class="animate-spin text-primary"
                   size="lg"
-                  class="text-primary"
                 />
                 <p class="text-gray-500">
                   Loading images...
@@ -327,13 +323,8 @@ async function deleteAlbum() {
                 ref="loadMoreTrigger"
                 class="col-span-full flex justify-center my-6 h-16"
               >
-                <ULoading
-                  v-if="isLoading"
-                  size="lg"
-                  class="text-primary"
-                />
                 <span
-                  v-else
+                  v-if="!isLoading"
                   class="text-gray-400 text-sm"
                 >Scroll for more images</span>
               </div>
@@ -359,53 +350,11 @@ async function deleteAlbum() {
       </UPageBody>
     </UPage>
 
-    <!-- Simple Image Modal -->
-    <UModal
+    <!-- Image Modal Component -->
+    <ImageModal
       v-model:open="isImageModalOpen"
-      fullscreen
-      :ui="{
-        wrapper: 'flex flex-col',
-        body: 'flex-1 flex items-center justify-center p-0 relative bg-gray-900',
-      }"
-      :close="false"
-    >
-      <template #body>
-        <div
-          v-if="selectedImage"
-          class="w-full h-full flex flex-col items-center justify-center relative"
-        >
-          <!-- Close button -->
-          <div class="absolute top-4 right-4 z-10">
-            <UButton
-              aria-label="Close image"
-              icon="i-heroicons-x-mark"
-              variant="ghost"
-              size="xl"
-              class="cursor-pointer"
-              @click="isImageModalOpen = false"
-            />
-          </div>
-
-          <!-- Main image -->
-          <div class="w-full h-full flex items-center justify-center relative">
-            <NuxtImg
-              v-if="selectedImage"
-              :key="selectedImage.id"
-              :src="selectedImage.url"
-              :alt="selectedImage.id.split('/').pop()"
-              class="max-h-full max-w-full w-full h-auto object-contain"
-              :style="{
-                aspectRatio: selectedImage.originalWidth && selectedImage.originalHeight ? `${selectedImage.originalWidth} / ${selectedImage.originalHeight}` : 'auto',
-              }"
-              format="auto"
-              :width="selectedImage.originalWidth || undefined"
-              :height="selectedImage.originalHeight || undefined"
-              sizes="800px md:100vw"
-            />
-          </div>
-        </div>
-      </template>
-    </UModal>
+      :image="selectedImage"
+    />
 
     <UModal
       v-model:open="showDeleteAlbumConfirm"
