@@ -216,12 +216,12 @@ defineShortcuts({
         >
           <NuxtImg
             densities="x1"
-            sizes="500px lg:100vw"
+            sizes="800px md:100vw"
             :src="currentImage.url"
             :alt="currentImage.id.split('/').pop()"
             class="max-h-full max-w-full w-full h-auto object-contain"
             :style="{
-              aspectRatio: currentImage.originalWidth && currentImage.originalHeight ? `${currentImage.originalWidth} / ${currentImage.originalHeight}` : 'auto'
+              aspectRatio: currentImage.originalWidth && currentImage.originalHeight ? `${currentImage.originalWidth} / ${currentImage.originalHeight}` : 'auto',
             }"
             format="auto"
             :width="currentImage.originalWidth || undefined"

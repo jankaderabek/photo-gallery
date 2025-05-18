@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AlbumImage from '~/components/AlbumImage.vue'
+
 const route = useRoute()
 const albumId = route.params.album as string
 const img = useImage()
@@ -310,46 +312,14 @@ async function deleteAlbum() {
 
             <div
               v-else
-              class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-4 items-center"
+              class="grid md:grid-cols-[repeat(auto-fill,minmax(600px,1fr))] gap-2 items-center"
             >
-              <div
+              <AlbumImage
                 v-for="image in allImages"
                 :key="image.id"
-                class="relative"
-              >
-                <!-- Image placeholder while loading -->
-                <div
-                  v-if="image.originalWidth && image.originalHeight"
-                  class="bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md overflow-hidden min-h-[200px]"
-                  :style="{
-                    aspectRatio: `${image.originalWidth} / ${image.originalHeight}`,
-                    width: '100%',
-                    height: 'auto',
-                  }"
-                />
-                <div
-                  v-else
-                  class="bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md overflow-hidden min-h-[200px]"
-                  style="aspect-ratio: 16/10; width: 100%; height: auto;"
-                />
-
-                <!-- Actual image -->
-                <NuxtImg
-                  :src="image.url"
-                  :alt="image.id"
-                  class="w-full h-full object-contain max-h-svh cursor-pointer transition-opacity absolute inset-0 max-w-4xl min-w-full"
-                  :style="{
-                    aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
-                  }"
-                  sizes="800px sm:1200px"
-                  format="auto"
-                  quality="90"
-                  loading="lazy"
-                  :width="image.originalWidth || undefined"
-                  :height="image.originalHeight || undefined"
-                  @click="openImageModal(image)"
-                />
-              </div>
+                :image="image"
+                @click="openImageModal"
+              />
 
               <!-- Infinite scroll trigger element -->
               <div
