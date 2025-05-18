@@ -137,7 +137,7 @@ function handleClick() {
       :key="imageKey"
       :src="image.url"
       :alt="image.id"
-      class="w-full h-full object-contain cursor-pointer transition-opacity rounded-md overflow-hidden"
+      class="mx-auto max-h-svh object-contain cursor-pointer transition-opacity rounded-md overflow-hidden"
       sizes="800px sm:1200px"
       format="auto"
       quality="90"

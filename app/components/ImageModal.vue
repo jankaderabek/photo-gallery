@@ -134,7 +134,7 @@ defineShortcuts({
           <UButton
             aria-label="Close image"
             icon="i-heroicons-x-mark"
-            variant="ghost"
+            variant="soft"
             size="xl"
             class="cursor-pointer"
             @click="closeModal"
@@ -191,14 +191,9 @@ defineShortcuts({
             :key="imageKey"
             :src="image.url"
             :alt="image.id.split('/').pop()"
-            class="max-h-full max-w-full w-full h-auto object-contain"
-            :style="{
-              aspectRatio: image.originalWidth && image.originalHeight ? `${image.originalWidth} / ${image.originalHeight}` : 'auto',
-            }"
+            class="max-h-svh max-w-svw object-contain"
             format="auto"
-            :width="image.originalWidth || undefined"
-            :height="image.originalHeight || undefined"
-            sizes="800px md:100vw"
+            sizes="800px md:1600px 2xl:2560px"
             @load="handleImageLoad"
             @error="handleImageError"
           />
