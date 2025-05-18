@@ -145,10 +145,10 @@ defineShortcuts({
         <div class="w-full h-full flex items-center justify-center relative">
           <!-- Loading state -->
           <div
-            v-if="true"
-            class="w-full h-full flex items-center justify-center aspect-[16/10]"
+            v-if="isLoading"
+            class="w-full h-full flex items-center justify-center"
           >
-            <div class="bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md flex items-center justify-center p-20">
+            <div class="w-full h-full max-w-[90vw] max-h-[90vh] bg-gray-100 dark:bg-gray-800 animate-pulse rounded-md flex items-center justify-center ">
               <UIcon
                 name="i-lineicons-spinner-arrow"
                 class="animate-spin text-primary"
